@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gantt — CIA Hybrid Proxmox Infrastructure</title>
+  <style>
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2a2d3e;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --accent:    #6366f1;
+
+      --c1: #6366f1; /* Phase 1 — Scoping       */
+      --c2: #10b981; /* Phase 2 — Build          */
+      --c3: #f59e0b; /* Phase 3 — Beta           */
+      --c4: #ef4444; /* Phase 4 — Final          */
+      --cm: #f8fafc; /* Milestone                */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      min-height: 100vh;
+      padding: 32px 24px 48px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 28px;
+    }
+
+    /* ── Legend ──────────────────────────────────────────────────── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .legend-dot {
+      width: 12px; height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .legend-milestone {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--cm);
+      flex-shrink: 0;
+    }
+
+    /* ── Gantt wrapper ────────────────────────────────────────────── */
+    .gantt-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .gantt {
+      min-width: 900px;
+      position: relative;
+    }
+
+    /* ── Header (months + weeks) ─────────────────────────────────── */
+    .gantt-header {
+      display: grid;
+      padding: 0 0 0 220px;
+      border-bottom: 1px solid var(--border);
+    }
+    .months-row {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+    .month-label {
+      flex-shrink: 0;
+      padding: 8px 10px;
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--accent);
+      border-right: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .weeks-row {
+      display: flex;
+    }
+    .week-label {
+      flex-shrink: 0;
+      width: 38px;
+      padding: 5px 0;
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      border-right: 1px solid var(--border);
+    }
+    .week-label.today {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ── Phase group header ──────────────────────────────────────── */
+    .phase-header {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      gap: 8px;
+    }
+    .phase-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Task row ────────────────────────────────────────────────── */
+    .task-row {
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+    }
+    .task-row:hover { background: rgba(255,255,255,0.025); }
+
+    .task-label {
+      width: 220px;
+      min-width: 220px;
+      padding: 0 16px;
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-right: 1px solid var(--border);
+    }
+
+    .task-timeline {
+      flex: 1;
+      position: relative;
+      height: 38px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Week grid lines */
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      pointer-events: none;
+    }
+    .grid-line {
+      width: 38px;
+      min-width: 38px;
+      border-right: 1px solid rgba(255,255,255,0.04);
+    }
+    .grid-line.today-line {
+      border-right: 1px dashed rgba(99,102,241,0.5);
+    }
+
+    /* Task bar */
+    .bar {
+      position: absolute;
+      height: 22px;
+      border-radius: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      transition: filter 0.15s, opacity 0.15s;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.75);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: none;
+    }
+    .bar:hover { filter: brightness(1.15); }
+
+    /* Milestone diamond */
+    .milestone {
+      position: absolute;
+      width: 14px; height: 14px;
+      background: var(--cm);
+      transform: translateY(-50%) rotate(45deg);
+      top: 50%;
+      cursor: pointer;
+      transition: filter 0.15s;
+      z-index: 10;
+      box-shadow: 0 0 0 3px rgba(248,250,252,0.15);
+    }
+    .milestone:hover { filter: brightness(1.2); }
+
+    /* Milestone vertical line */
+    .milestone-line {
+      position: absolute;
+      width: 1px;
+      top: 0; bottom: 0;
+      background: rgba(248,250,252,0.2);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* ── Tooltip ─────────────────────────────────────────────────── */
+    .tooltip {
+      position: fixed;
+      background: #1e2235;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+      z-index: 1000;
+      max-width: 260px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .tooltip.visible { opacity: 1; }
+    .tooltip-title { font-weight: 700; margin-bottom: 4px; }
+    .tooltip-dates { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .tooltip-desc  { color: #94a3b8; font-size: 11px; line-height: 1.5; }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>CIA — Hybrid Proxmox Infrastructure</h1>
+<div class="subtitle">Diagramme de Gantt · T-NSA-810 · 2026</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>Follow-up 1 — Scoping</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>Follow-up 2 — First Building Blocks</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>Follow-up 3 — Beta</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c4)"></div>Keynote — Final Delivery</div>
+  <div class="legend-item"><div class="legend-milestone"></div>Milestone / Rendu</div>
+</div>
+
+<div class="gantt-wrap">
+  <div class="gantt" id="gantt"></div>
+</div>
+
+<p class="footer-note">⚠ Les dates Follow-up 2 et 3 sont estimées — à ajuster dès que vous les recevez.</p>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-dates" id="tt-dates"></div>
+  <div class="tooltip-desc"  id="tt-desc"></div>
+</div>
+
+<script>
+// ── Project config ──────────────────────────────────────────────────────────
+const PROJECT_START = new Date('2026-02-16'); // lundi de départ
+const PROJECT_END   = new Date('2026-06-21');
+const TODAY         = new Date('2026-03-05');
+const WEEK_PX       = 38;
+
+// Milestones
+const MILESTONES = [
+  { date: '2026-03-06', label: 'Follow-up 1', color: '#c7d2fe' },
+  { date: '2026-04-03', label: 'Follow-up 2 (est.)', color: '#6ee7b7' },
+  { date: '2026-05-08', label: 'Follow-up 3 (est.)', color: '#fde68a' },
+  { date: '2026-06-14', label: 'Keynote', color: '#fca5a5' },
+];
+
+// Tasks
+const PHASES = [
+  {
+    label: 'Follow-up 1 — Scoping', color: 'var(--c1)',
+    tasks: [
+      { label: 'Exploration technologique',  start: '2026-02-16', end: '2026-02-27', desc: 'Tests des stacks : pfSense, OpenVPN, NetBox, Elasticsearch sur Proxmox.' },
+      { label: 'Setup GitOps + CI/CD',       start: '2026-02-23', end: '2026-03-06', desc: 'Repo GitHub, OpenTofu, Ansible, GitHub Actions (lint + validate).' },
+      { label: 'Diagramme d\'architecture',  start: '2026-02-23', end: '2026-03-04', desc: 'Schéma réseau avec les deux sites, VPN, firewalls, NetBox, Elastic.' },
+      { label: 'Gantt + backlog tickets',    start: '2026-02-25', end: '2026-03-06', desc: 'Découpage en tickets, planning, suivi des blockers.' },
+    ]
+  },
+  {
+    label: 'Follow-up 2 — First Building Blocks', color: 'var(--c2)',
+    tasks: [
+      { label: 'Template cloud-init Proxmox', start: '2026-03-09', end: '2026-03-13', desc: 'Création du template Debian 12 cloud-init sur le node Proxmox.' },
+      { label: 'Provisioning VMs (OpenTofu)', start: '2026-03-09', end: '2026-03-20', desc: 'tofu apply — 3 VMs Site 1 + 3 VMs Site 2.' },
+      { label: 'pfSense Site 1 + Site 2',     start: '2026-03-16', end: '2026-03-27', desc: 'Installation, config réseau, segmentation LAN/DMZ/Admin.' },
+      { label: 'NetBox (IPAM) déploiement',   start: '2026-03-23', end: '2026-04-03', desc: 'Ansible playbook 01 — Docker, config, superuser, API token.' },
+    ]
+  },
+  {
+    label: 'Follow-up 3 — Beta', color: 'var(--c3)',
+    tasks: [
+      { label: 'VPN site-to-site (OpenVPN)',  start: '2026-04-06', end: '2026-04-17', desc: 'PKI easy-rsa, config server/client, tunnel 10.255.0.0/24.' },
+      { label: 'Elasticsearch + Kibana',      start: '2026-04-06', end: '2026-04-24', desc: 'Ansible playbook 02 — Docker, heap, sécurité xpack, dashboards.' },
+      { label: 'Bastion SSH (Site 2)',         start: '2026-04-20', end: '2026-05-01', desc: 'Hardening SSH, fail2ban, logging centralisé.' },
+      { label: 'Firewall rules pfSense',      start: '2026-04-13', end: '2026-05-08', desc: 'Règles deny-by-default, kill switch, VPN rules.' },
+      { label: 'DNS forwarding inter-sites',  start: '2026-04-27', end: '2026-05-08', desc: 'dnsmasq ou Unbound — forwarding cia.local entre S1 et S2.' },
+    ]
+  },
+  {
+    label: 'Keynote — Final Delivery', color: 'var(--c4)',
+    tasks: [
+      { label: 'Site web interne (S2)',        start: '2026-05-11', end: '2026-05-22', desc: 'Service accessible uniquement depuis le réseau interne.' },
+      { label: 'NetBox auto-update (script)',  start: '2026-05-11', end: '2026-05-22', desc: 'Script Python / cron qui synchronise les VMs Proxmox → NetBox API.' },
+      { label: 'Tests & hardening global',    start: '2026-05-18', end: '2026-06-05', desc: 'Tests de connectivité, pentest basique, vérification règles fw.' },
+      { label: 'Documentation & runbooks',    start: '2026-05-25', end: '2026-06-10', desc: 'DRP, runbooks de rebuild, screenshots, credential store (vault).' },
+      { label: 'CI/CD bonus (linting + IaC)', start: '2026-05-04', end: '2026-05-22', desc: 'GitHub Actions avancés, golden paths, templates réutilisables.' },
+      { label: 'Rendu final',                 start: '2026-06-10', end: '2026-06-14', desc: 'Relecture, commit final, remise dossier technique.' },
+    ]
+  }
+];
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function weeksFrom(ref, d) {
+  return (d - ref) / (7 * 86400000);
+}
+function totalWeeks() {
+  return Math.ceil(weeksFrom(PROJECT_START, PROJECT_END));
+}
+function fmtDate(ds) {
+  const d = new Date(ds);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// ── Build header ─────────────────────────────────────────────────────────────
+function buildHeader(nWeeks) {
+  // months
+  const months = {};
+  for (let w = 0; w < nWeeks; w++) {
+    const d = new Date(PROJECT_START);
+    d.setDate(d.getDate() + w * 7);
+    const key = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    if (!months[key]) months[key] = 0;
+    months[key]++;
+  }
+
+  let monthsHTML = '';
+  for (const [label, count] of Object.entries(months)) {
+    monthsHTML += `<div class="month-label" style="width:${count * WEEK_PX}px">${label}</div>`;
+  }
+
+  let weeksHTML = '';
+  for (let w = 0; w < nWeeks; w++) {
+    const d = new Date(PROJECT_START);
+    d.setDate(d.getDate() + w * 7);
+    const isToday = weeksFrom(PROJECT_START, TODAY) >= w && weeksFrom(PROJECT_START, TODAY) < w + 1;
+    const label = `S${w + 1}`;
+    weeksHTML += `<div class="week-label${isToday ? ' today' : ''}" title="${fmtDate(d)}">${label}</div>`;
+  }
+
+  return `
+    <div class="gantt-header">
+      <div class="months-row">${monthsHTML}</div>
+      <div class="weeks-row">${weeksHTML}</div>
+    </div>`;
+}
+
+// ── Build milestone lines (overlaid on timeline cells) ───────────────────────
+function milestoneLineAt(nWeeks, date) {
+  const x = weeksFrom(PROJECT_START, new Date(date)) * WEEK_PX;
+  return `<div class="milestone-line" style="left:${x + WEEK_PX / 2}px"></div>`;
+}
+
+// ── Build grid lines ─────────────────────────────────────────────────────────
+function buildGridLines(nWeeks) {
+  let html = '<div class="grid-lines">';
+  for (let w = 0; w < nWeeks; w++) {
+    const d = new Date(PROJECT_START);
+    d.setDate(d.getDate() + w * 7);
+    const isToday = weeksFrom(PROJECT_START, TODAY) >= w && weeksFrom(PROJECT_START, TODAY) < w + 1;
+    html += `<div class="grid-line${isToday ? ' today-line' : ''}"></div>`;
+  }
+  return html + '</div>';
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const nWeeks = totalWeeks();
+  const gantt  = document.getElementById('gantt');
+  let html = buildHeader(nWeeks);
+
+  for (const phase of PHASES) {
+    // Phase header
+    html += `
+      <div class="phase-header">
+        <div class="phase-dot" style="background:${phase.color}"></div>
+        ${phase.label}
+      </div>`;
+
+    // Task rows
+    for (const task of phase.tasks) {
+      const startD  = new Date(task.start);
+      const endD    = new Date(task.end);
+      const x       = weeksFrom(PROJECT_START, startD) * WEEK_PX;
+      const w       = Math.max(weeksFrom(startD, endD) * WEEK_PX, 14);
+
+      // milestone lines for this row
+      let mLines = '';
+      for (const m of MILESTONES) {
+        mLines += milestoneLineAt(nWeeks, m.date);
+      }
+
+      const encodedTask = encodeURIComponent(JSON.stringify({ label: task.label, start: task.start, end: task.end, desc: task.desc }));
+
+      html += `
+        <div class="task-row">
+          <div class="task-label" title="${task.label}">${task.label}</div>
+          <div class="task-timeline" style="width:${nWeeks * WEEK_PX}px">
+            ${buildGridLines(nWeeks)}
+            ${mLines}
+            <div class="bar"
+              style="left:${x}px; width:${w}px; background:${phase.color}; opacity:0.85"
+              data-task="${encodedTask}"
+            ></div>
+          </div>
+        </div>`;
+    }
+  }
+
+  // Milestone row
+  html += `
+    <div class="task-row" style="border-top: 1px solid var(--border); background: rgba(255,255,255,0.015)">
+      <div class="task-label" style="color:var(--muted); font-size:11px; font-style:italic">Milestones</div>
+      <div class="task-timeline" style="width:${nWeeks * WEEK_PX}px">
+        ${buildGridLines(nWeeks)}`;
+
+  for (const m of MILESTONES) {
+    const mx = weeksFrom(PROJECT_START, new Date(m.date)) * WEEK_PX + WEEK_PX / 2 - 7;
+    const encodedM = encodeURIComponent(JSON.stringify({ label: m.label, start: m.date, end: m.date, desc: 'Point de suivi projet.' }));
+    html += `
+        <div class="milestone-line" style="left:${mx + 7}px"></div>
+        <div class="milestone" style="left:${mx}px; background:${m.color}" data-task="${encodedM}"></div>`;
+  }
+
+  html += `</div></div>`;
+
+  gantt.innerHTML = html;
+  attachTooltips();
+}
+
+// ── Tooltips ─────────────────────────────────────────────────────────────────
+function attachTooltips() {
+  const tt     = document.getElementById('tooltip');
+  const ttTitle = document.getElementById('tt-title');
+  const ttDates = document.getElementById('tt-dates');
+  const ttDesc  = document.getElementById('tt-desc');
+
+  document.querySelectorAll('.bar, .milestone').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      const data = JSON.parse(decodeURIComponent(el.dataset.task));
+      ttTitle.textContent = data.label;
+      ttDates.textContent = data.start === data.end
+        ? fmtDate(data.start)
+        : `${fmtDate(data.start)} → ${fmtDate(data.end)}`;
+      ttDesc.textContent  = data.desc;
+      tt.classList.add('visible');
+    });
+    el.addEventListener('mousemove', e => {
+      tt.style.left = (e.clientX + 14) + 'px';
+      tt.style.top  = (e.clientY - 10) + 'px';
+    });
+    el.addEventListener('mouseleave', () => tt.classList.remove('visible'));
+  });
+}
+
+render();
+</script>
+</body>
+</html>
