@@ -1,0 +1,14 @@
+# Injecté depuis Doppler via env vars
+netbox_secret_key:     "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
+netbox_db_password:    "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
+netbox_admin_user:     "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
+netbox_admin_password: "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
+elastic_password:      "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
+kibana_password:       "{{ lookup('env', 'KIBANA_PASSWORD') }}"
+openvpn_ca_pass:       "{{ lookup('env', 'OPENVPN_CA_PASS') }}"
+
+domain_s1: "s1.local"
+domain_s2: "s2.local"
+vpn_subnet: "10.8.0.0/24"
+lan_s1: "10.1.0.0/24"
+lan_s2: "10.2.0.0/24"

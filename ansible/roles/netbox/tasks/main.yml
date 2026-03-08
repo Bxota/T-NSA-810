@@ -1,0 +1,60 @@
+- name: Install dependencies
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+      - postgresql
+      - postgresql-contrib
+      - redis-server
+      - nginx
+      - git
+    state: present
+
+- name: Create netbox DB user
+  become_user: postgres
+  postgresql_user:
+    name: netbox
+    password: "{{ netbox_db_password }}"
+
+- name: Create netbox database
+  become_user: postgres
+  postgresql_db:
+    name: netbox
+    owner: netbox
+
+- name: Clone NetBox v4.2
+  git:
+    repo: https://github.com/netbox-community/netbox.git
+    dest: /opt/netbox
+    version: v4.2.0
+    depth: 1
+
+- name: Create netbox system user
+  user:
+    name: netbox
+    system: yes
+    home: /opt/netbox
+
+- name: Deploy configuration.py
+  template:
+    src: configuration.py.j2
+    dest: /opt/netbox/netbox/netbox/configuration.py
+    owner: netbox
+
+- name: Run upgrade script
+  command: /opt/netbox/upgrade.sh
+  args:
+    creates: /opt/netbox/venv/bin/gunicorn
+
+- name: Deploy systemd service
+  template:
+    src: netbox.service.j2
+    dest: /etc/systemd/system/netbox.service
+  notify: reload systemd
+
+- name: Enable and start NetBox
+  systemd:
+    name: netbox
+    enabled: yes
+    state: started

@@ -1,0 +1,25 @@
+---
+- name: Common setup all VMs
+  hosts: all
+  become: true
+  roles: [common]
+
+- name: Deploy NetBox
+  hosts: netbox
+  become: true
+  roles: [netbox]
+
+- name: Deploy Elasticsearch + Kibana
+  hosts: elasticsearch
+  become: true
+  roles: [elasticsearch, filebeat]
+
+- name: Deploy Bastion
+  hosts: bastion
+  become: true
+  roles: [bastion, filebeat]
+
+- name: Deploy Webserver
+  hosts: webserver
+  become: true
+  roles: [webserver, filebeat]
