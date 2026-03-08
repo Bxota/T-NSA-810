@@ -43,20 +43,3 @@ esac
 # Cleanup
 rm -f /tmp/cia_infra
 echo "=== Done ==="
-```
-
----
-
-## Récapitulatif visuel
-```
-MAINTENANT (sans droits admin)          QUAND TU AURAS LES DROITS
-────────────────────────────────        ──────────────────────────
-✅ Structure Git + .gitignore           ⏳ Donner rôle Admin au token
-✅ Installer terraform/ansible/doppler  ⏳ Upload ISOs pfSense + Ubuntu
-✅ Générer clé SSH cia_infra            ⏳ Créer template cloud-init (qm)
-✅ Configurer tous les secrets Doppler  ⏳ terraform apply
-✅ Écrire tout le code Terraform        ⏳ Attendre cloud-init (90s)
-✅ Écrire tous les rôles Ansible        ⏳ ansible-playbook site.yml
-✅ Écrire deploy.sh                     ⏳ Config manuelle pfSense S1+S2
-✅ terraform init (valide la syntaxe)   ⏳ Test VPN + connectivité
-✅ ansible --syntax-check site.yml      ⏳ Commiter config pfSense XML
