@@ -1,35 +1,60 @@
-variable "vm_id" {}
-variable "vm_name" {}
+terraform {
+  required_providers {
+    proxmox = {
+      source = "bpg/proxmox"
+    }
+  }
+}
+
+variable "vm_id"       {}
+variable "vm_name"     {}
 variable "target_node" {}
-variable "memory" {}
-variable "cores" {}
+variable "memory"      {}
+variable "cores"       {}
 variable "networks" {
   type = list(object({ bridge = string }))
 }
 
-resource "proxmox_vm_qemu" "pfsense" {
-  vmid        = var.vm_id
-  name        = var.vm_name
-  target_node = var.target_node
-  iso         = "local:iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
-  os_type     = "other"
-  cores       = var.cores
-  memory      = var.memory
-  scsihw      = "virtio-scsi-pci"
-  boot        = "cdn"
+resource "proxmox_virtual_environment_vm" "pfsense" {
+  vm_id         = var.vm_id
+  name          = var.vm_name
+  node_name     = var.target_node
+  kvm           = false
+  scsi_hardware = "virtio-scsi-pci"
+  boot_order    = ["ide2", "scsi0"]
 
-  disk {
-    slot    = "scsi0"
-    size    = "16G"
-    type    = "scsi"
-    storage = "local-lvm"
+  operating_system {
+    type = "other"
   }
 
-  dynamic "network" {
+  cpu {
+    cores = var.cores
+  }
+
+  memory {
+    dedicated = var.memory
+  }
+
+  cdrom {
+    enabled   = true
+    file_id   = "local:iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
+    interface = "ide2"
+  }
+
+  disk {
+    datastore_id = "local-lvm"
+    interface    = "scsi0"
+    size         = 16
+    file_format  = "raw"
+  }
+
+  dynamic "network_device" {
     for_each = var.networks
     content {
       model  = "virtio"
-      bridge = network.value.bridge
+      bridge = network_device.value.bridge
     }
   }
 }
+
+output "vm_name" { value = proxmox_virtual_environment_vm.pfsense.name }

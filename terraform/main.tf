@@ -18,13 +18,14 @@ module "netbox" {
   vm_id       = 401
   vm_name     = "cia-netbox"
   target_node = var.target_node
-  clone       = var.template_name
+  clone       = var.template_id
   storage     = var.storage
   cores       = 2
   memory      = 4096
-  disk_size   = "40G"
+  disk_size   = 40
   bridge      = "vmbr1"
-  ip_config   = "ip=10.1.0.10/24,gw=10.1.0.1"
+  ip_address  = "10.1.0.10/24"
+  gateway     = "10.1.0.1"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -35,13 +36,14 @@ module "elasticsearch" {
   vm_id       = 402
   vm_name     = "cia-elastic"
   target_node = var.target_node
-  clone       = var.template_name
+  clone       = var.template_id
   storage     = var.storage
   cores       = 4
   memory      = 8192
-  disk_size   = "80G"
+  disk_size   = 80
   bridge      = "vmbr1"
-  ip_config   = "ip=10.1.0.20/24,gw=10.1.0.1"
+  ip_address  = "10.1.0.20/24"
+  gateway     = "10.1.0.1"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -67,13 +69,14 @@ module "bastion" {
   vm_id       = 404
   vm_name     = "cia-bastion"
   target_node = var.target_node
-  clone       = var.template_name
+  clone       = var.template_id
   storage     = var.storage
   cores       = 1
   memory      = 1024
-  disk_size   = "20G"
+  disk_size   = 20
   bridge      = "vmbr2"
-  ip_config   = "ip=10.2.0.5/24,gw=10.2.0.1"
+  ip_address  = "10.2.0.5/24"
+  gateway     = "10.2.0.1"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -84,13 +87,14 @@ module "webserver" {
   vm_id       = 405
   vm_name     = "cia-web"
   target_node = var.target_node
-  clone       = var.template_name
+  clone       = var.template_id
   storage     = var.storage
   cores       = 2
   memory      = 2048
-  disk_size   = "30G"
+  disk_size   = 30
   bridge      = "vmbr2"
-  ip_config   = "ip=10.2.0.30/24,gw=10.2.0.1"
+  ip_address  = "10.2.0.30/24"
+  gateway     = "10.2.0.1"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password

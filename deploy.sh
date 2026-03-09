@@ -17,6 +17,11 @@ export KIBANA_PASSWORD=$(doppler secrets get KIBANA_PASSWORD --plain)
 export OPENVPN_CA_PASS=$(doppler secrets get OPENVPN_CA_PASS --plain)
 
 case "$1" in
+  init)
+    echo "--- Terraform init ---"
+    cd terraform/
+    doppler run --command='terraform init'
+    ;;
   infra)
     echo "--- Terraform apply ---"
     cd terraform/
@@ -25,7 +30,8 @@ case "$1" in
       -var="proxmox_token_id=$PROXMOX_TOKEN_ID" \
       -var="proxmox_token_secret=$PROXMOX_TOKEN_SECRET" \
       -var="ssh_public_key=$SSH_PUBLIC_KEY" \
-      -var="vm_password=$VM_PASSWORD"'
+      -var="vm_password=$VM_PASSWORD" \
+      -var="template_id=$TEMPLATE_ID"'
     ;;
   config)
     echo "--- Ansible playbooks ---"
