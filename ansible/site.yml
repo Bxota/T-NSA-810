@@ -1,6 +1,11 @@
 ---
+- name: Bootstrap Proxmox (NAT + port forwarding)
+  hosts: proxmox
+  become: true
+  roles: [proxmox-bootstrap]
+
 - name: Common setup all VMs
-  hosts: all
+  hosts: all:!proxmox
   become: true
   roles: [common]
 
