@@ -19,7 +19,6 @@ resource "proxmox_virtual_environment_vm" "pfsense" {
   vm_id         = var.vm_id
   name          = var.vm_name
   node_name     = var.target_node
-  kvm           = false
   scsi_hardware = "virtio-scsi-pci"
   boot_order    = ["ide2", "scsi0"]
 
