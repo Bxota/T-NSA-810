@@ -1,0 +1,20 @@
+# CIA - Audit rules
+-D
+-b 8192
+-f 1
+
+# Surveiller les connexions SSH
+-w /var/log/auth.log -p wa -k auth
+
+# Surveiller les modifications de fichiers sensibles
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+
+# Surveiller les appels système critiques
+-a always,exit -F arch=b64 -S execve -k exec
+-a always,exit -F arch=b32 -S execve -k exec
+
+# Surveiller les connexions réseau
+-a always,exit -F arch=b64 -S connect -k network

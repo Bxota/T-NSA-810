@@ -1,0 +1,24 @@
+[Unit]
+Description=NetBox WSGI Service
+Documentation=https://docs.netbox.dev/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=netbox
+Group=netbox
+WorkingDirectory=/opt/netbox
+ExecStart=/opt/netbox/venv/bin/gunicorn \
+    --pythonpath /opt/netbox/netbox \
+    --bind 127.0.0.1:8001 \
+    --timeout 120 \
+    --workers 3 \
+    netbox.wsgi
+
+Restart=on-failure
+RestartSec=30
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

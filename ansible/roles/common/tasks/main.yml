@@ -14,13 +14,16 @@
       - ufw
       - fail2ban
       - qemu-guest-agent
+      - acl
+      - python3-psycopg2
     state: present
 
-- name: Enable qemu-guest-agent
-  systemd:
-    name: qemu-guest-agent
-    enabled: yes
-    state: started
+# - name: Enable qemu-guest-agent
+#   systemd:
+#     name: qemu-guest-agent
+#     enabled: yes
+#     state: started
+#   ignore_errors: yes  # Le canal virtio est activé via Terraform séparément
 
 - name: Disable password SSH auth
   lineinfile:

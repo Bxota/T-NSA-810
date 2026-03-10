@@ -1,0 +1,42 @@
+ALLOWED_HOSTS = ['*']
+
+DATABASE = {
+    'NAME': 'netbox',
+    'USER': 'netbox',
+    'PASSWORD': '{{ netbox_db_password }}',
+    'HOST': 'localhost',
+    'PORT': '',
+    'CONN_MAX_AGE': 300,
+}
+
+REDIS = {
+    'tasks': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'PASSWORD': '',
+        'DATABASE': 0,
+        'SSL': False,
+    },
+    'caching': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'PASSWORD': '',
+        'DATABASE': 1,
+        'SSL': False,
+    }
+}
+
+SECRET_KEY = '{{ netbox_secret_key }}'
+
+SUPERUSER_NAME     = '{{ netbox_admin_user }}'
+SUPERUSER_EMAIL    = 'admin@cia.local'
+SUPERUSER_PASSWORD = '{{ netbox_admin_password }}'
+
+ALLOWED_URL_SCHEMES = (
+    'file', 'ftp', 'ftps', 'http', 'https', 'irc', 'mailto',
+    'sftp', 'ssh', 'tel', 'telnet', 'tftp', 'vnc', 'xmpp',
+)
+
+LOGGING = {}
+DEBUG   = False
+PLUGINS = []

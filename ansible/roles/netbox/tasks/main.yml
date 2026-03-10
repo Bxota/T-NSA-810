@@ -9,6 +9,7 @@
       - redis-server
       - nginx
       - git
+      - libpq-dev
     state: present
 
 - name: Create netbox DB user
@@ -36,16 +37,81 @@
     system: yes
     home: /opt/netbox
 
+- name: Generate SECRET_KEY if not provided or too short
+  shell: |
+    python3 -c "import secrets; print(secrets.token_urlsafe(60))" > /etc/netbox-secret-key
+    chmod 600 /etc/netbox-secret-key
+  args:
+    creates: /etc/netbox-secret-key
+  when: netbox_secret_key | length < 50
+
+- name: Read generated SECRET_KEY from file
+  slurp:
+    src: /etc/netbox-secret-key
+  register: generated_secret_key
+  when: netbox_secret_key | length < 50
+
+- name: Set netbox_secret_key from generated file
+  set_fact:
+    netbox_secret_key: "{{ generated_secret_key.content | b64decode | trim }}"
+  when: netbox_secret_key | length < 50
+
 - name: Deploy configuration.py
   template:
     src: configuration.py.j2
     dest: /opt/netbox/netbox/netbox/configuration.py
     owner: netbox
 
-- name: Run upgrade script
+- name: Run upgrade script (install venv + dependencies)
   command: /opt/netbox/upgrade.sh
   args:
     creates: /opt/netbox/venv/bin/gunicorn
+
+- name: Run database migrations
+  command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py migrate --no-input
+  become_user: netbox
+
+- name: Create superuser
+  shell: |
+    /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py shell -c "
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    if not User.objects.filter(username='{{ netbox_admin_user }}').exists():
+        User.objects.create_superuser('{{ netbox_admin_user }}', 'admin@cia.local', '{{ netbox_admin_password }}')
+        print('created')
+    else:
+        print('exists')
+    "
+  become_user: netbox
+  register: superuser_result
+  changed_when: "'created' in superuser_result.stdout"
+
+- name: Create static directory and set ownership
+  file:
+    path: /opt/netbox/netbox/static
+    state: directory
+    owner: netbox
+    group: netbox
+    mode: "0755"
+
+- name: Set netbox ownership on /opt/netbox
+  file:
+    path: /opt/netbox
+    owner: netbox
+    group: netbox
+    recurse: yes
+
+- name: Collect static files
+  command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py collectstatic --no-input
+  become_user: netbox
+
+- name: Set static files permissions for nginx
+  file:
+    path: /opt/netbox/netbox/static
+    owner: netbox
+    group: www-data
+    mode: "0755"
+    recurse: yes
 
 - name: Deploy systemd service
   template:
@@ -53,8 +119,30 @@
     dest: /etc/systemd/system/netbox.service
   notify: reload systemd
 
-- name: Enable and start NetBox
+- name: Deploy nginx config for NetBox
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/netbox
+  notify: restart nginx
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/netbox
+    dest: /etc/nginx/sites-enabled/netbox
+    state: link
+  notify: restart nginx
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: Enable and start NetBox and nginx
   systemd:
-    name: netbox
+    name: "{{ item }}"
     enabled: yes
     state: started
+  loop:
+    - netbox
+    - nginx

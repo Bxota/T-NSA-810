@@ -17,6 +17,25 @@
     state: present
     update_cache: yes
 
+- name: Remove SSL keystore entries left by auto-configuration
+  shell: |
+    for key in \
+      xpack.security.transport.ssl.keystore.secure_password \
+      xpack.security.transport.ssl.truststore.secure_password \
+      xpack.security.http.ssl.keystore.secure_password \
+      xpack.security.http.ssl.truststore.secure_password; do
+      /usr/share/elasticsearch/bin/elasticsearch-keystore remove "$key" 2>/dev/null || true
+    done
+  become: yes
+
+- name: Configure JVM heap size
+  copy:
+    dest: /etc/elasticsearch/jvm.options.d/heap.options
+    content: |
+      -Xms512m
+      -Xmx512m
+  notify: restart elasticsearch
+
 - name: Deploy elasticsearch.yml
   template:
     src: elasticsearch.yml.j2
@@ -29,12 +48,68 @@
     dest: /etc/kibana/kibana.yml
   notify: restart kibana
 
-- name: Enable services
+- name: Enable and start elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
+- name: Wait for Elasticsearch to be ready
+  wait_for:
+    host: localhost
+    port: 9200
+    delay: 10
+    timeout: 60
+
+- name: Reset elastic user to auto password and capture it
+  shell: |
+    /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -a --batch 2>&1 \
+      | grep "New value:" | awk '{print $NF}'
+  register: elastic_auto_password
+  become: yes
+
+- name: Set elastic user password to Doppler value via API
+  uri:
+    url: "http://localhost:9200/_security/user/elastic/_password"
+    method: POST
+    body_format: json
+    body:
+      password: "{{ elastic_password }}"
+    headers:
+      Content-Type: "application/json"
+    url_username: "elastic"
+    url_password: "{{ elastic_auto_password.stdout | trim }}"
+    force_basic_auth: yes
+    validate_certs: no
+  when: elastic_auto_password.stdout | trim != ""
+
+- name: Reset kibana_system user to auto password and capture it
+  shell: |
+    /usr/share/elasticsearch/bin/elasticsearch-reset-password -u kibana_system -a --batch 2>&1 \
+      | grep "New value:" | awk '{print $NF}'
+  register: kibana_auto_password
+  become: yes
+
+- name: Set kibana_system password to Doppler value via API
+  uri:
+    url: "http://localhost:9200/_security/user/kibana_system/_password"
+    method: POST
+    body_format: json
+    body:
+      password: "{{ kibana_password }}"
+    headers:
+      Content-Type: "application/json"
+    url_username: "elastic"
+    url_password: "{{ elastic_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+  when: kibana_auto_password.stdout | trim != ""
+
+- name: Enable kibana and logstash
   systemd:
     name: "{{ item }}"
     enabled: yes
     state: started
   loop:
-    - elasticsearch
     - kibana
     - logstash

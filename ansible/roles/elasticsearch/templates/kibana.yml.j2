@@ -1,0 +1,12 @@
+server.port: 5601
+server.host: "0.0.0.0"
+server.name: "cia-kibana"
+
+elasticsearch.hosts: ["http://localhost:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ kibana_password }}"
+
+logging.appenders.file.type: file
+logging.appenders.file.fileName: /var/log/kibana/kibana.log
+logging.appenders.file.layout.type: json
+logging.root.appenders: [default, file]

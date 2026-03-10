@@ -1,0 +1,13 @@
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: restart netbox
+  systemd:
+    name: netbox
+    state: restarted
+
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted

@@ -1,0 +1,31 @@
+port 1194
+proto udp
+dev tun
+
+ca   /etc/openvpn/ca.crt
+cert /etc/openvpn/server.crt
+key  /etc/openvpn/server.key
+dh   /etc/openvpn/dh.pem
+
+tls-auth /etc/openvpn/ta.key 0
+cipher AES-256-GCM
+auth SHA256
+
+server {{ vpn_subnet.split('/')[0] }} 255.255.255.0
+
+# Push routes to internal networks
+push "route {{ lan_s1.split('/')[0] }} 255.255.255.0"
+push "route {{ lan_s2.split('/')[0] }} 255.255.255.0"
+push "dhcp-option DNS 8.8.8.8"
+
+keepalive 10 120
+max-clients 10
+
+user  nobody
+group nogroup
+persist-key
+persist-tun
+
+status  /var/log/openvpn/status.log
+log-append /var/log/openvpn/openvpn.log
+verb 3
