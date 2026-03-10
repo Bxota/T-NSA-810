@@ -32,7 +32,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   agent {
-    enabled = true
+    enabled = false
   }
 
   operating_system {
@@ -41,6 +41,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   cpu {
     cores = var.cores
+    type  = "host"
   }
 
   memory {
@@ -52,7 +53,10 @@ resource "proxmox_virtual_environment_vm" "vm" {
     interface    = "scsi0"
     size         = var.disk_size
     iothread     = true
+    file_format  = "raw"
   }
+
+  scsi_hardware = "virtio-scsi-single"
 
   network_device {
     model  = "virtio"

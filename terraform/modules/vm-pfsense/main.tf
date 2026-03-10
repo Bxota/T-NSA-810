@@ -28,6 +28,7 @@ resource "proxmox_virtual_environment_vm" "pfsense" {
 
   cpu {
     cores = var.cores
+    type  = "host"
   }
 
   memory {

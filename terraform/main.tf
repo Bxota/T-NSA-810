@@ -25,7 +25,7 @@ module "netbox" {
   disk_size   = 40
   bridge      = "vmbr1"
   ip_address  = "10.1.0.10/24"
-  gateway     = "10.1.0.1"
+  gateway     = "10.1.0.254"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -43,7 +43,7 @@ module "elasticsearch" {
   disk_size   = 80
   bridge      = "vmbr1"
   ip_address  = "10.1.0.20/24"
-  gateway     = "10.1.0.1"
+  gateway     = "10.1.0.254"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -76,7 +76,7 @@ module "bastion" {
   disk_size   = 20
   bridge      = "vmbr2"
   ip_address  = "10.2.0.5/24"
-  gateway     = "10.2.0.1"
+  gateway     = "10.2.0.254"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -94,7 +94,7 @@ module "webserver" {
   disk_size   = 30
   bridge      = "vmbr2"
   ip_address  = "10.2.0.30/24"
-  gateway     = "10.2.0.1"
+  gateway     = "10.2.0.254"
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
