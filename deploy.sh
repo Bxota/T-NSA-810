@@ -32,17 +32,40 @@ case "$1" in
       -var="ssh_public_key=$SSH_PUBLIC_KEY" \
       -var="vm_password=$VM_PASSWORD" \
       -var="template_id=$TEMPLATE_ID"'
+    cd ..
+    echo "--- Cleaning SSH known_hosts ---"
+    ssh-keygen -R 10.1.0.10 2>/dev/null || true  # netbox
+    ssh-keygen -R 10.1.0.20 2>/dev/null || true  # elasticsearch
+    ssh-keygen -R 10.2.0.5  2>/dev/null || true  # bastion
+    ssh-keygen -R 10.2.0.10 2>/dev/null || true  # webserver
+    ;;
+  destroy)
+    echo "--- Terraform destroy ---"
+    cd terraform/
+    doppler run --command='terraform destroy -auto-approve \
+      -var="proxmox_api_url=$PROXMOX_API_URL" \
+      -var="proxmox_token_id=$PROXMOX_TOKEN_ID" \
+      -var="proxmox_token_secret=$PROXMOX_TOKEN_SECRET" \
+      -var="ssh_public_key=$SSH_PUBLIC_KEY" \
+      -var="vm_password=$VM_PASSWORD" \
+      -var="template_id=$TEMPLATE_ID"'
     ;;
   config)
     echo "--- Ansible playbooks ---"
     cd ansible/
+    ansible-galaxy collection install -r requirements.yml -p ./collections
     ansible-playbook -i inventory/hosts.yml site.yml
     ;;
   all)
     $0 infra && sleep 90 && $0 config
     ;;
+  ssh-key)
+    echo "--- Exporting SSH key to /tmp/cia_infra ---"
+    # Garde la clé disponible pour les commandes ansible manuelles
+    trap '' EXIT
+    ;;
   *)
-    echo "Usage: ./deploy.sh [infra|config|all]"
+    echo "Usage: ./deploy.sh [init|infra|destroy|config|all|ssh-key]"
     ;;
 esac
 
