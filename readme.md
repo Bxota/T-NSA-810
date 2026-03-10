@@ -3,12 +3,20 @@
 ## Prerequisites
 
 - install terraform
-> brew tap hashicorp/tap
 
-> brew install hashicorp/tap/terraform
+```bash
+brew tap hashicorp/tap
+```
+
+```bash
+brew install hashicorp/tap/terraform
+```
 
 - install doppler
-> doppler setup 
+
+```bash
+doppler setup
+```
 
 - configure template ubuntu 
 ```bash
@@ -32,4 +40,11 @@ qm set 9000 --agent enabled=1
 
 # Convertir en template
 qm template 9000
+```
+
+- Supprimer cache terraform
+
+```bash
+cd terraform/
+terraform state list | xargs -I{} terraform state rm {}
 ```
