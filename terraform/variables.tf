@@ -10,6 +10,6 @@ variable "vm_password"          {
   type      = string
   sensitive = true
 }
-variable "target_node"          { default = "pve" }
+variable "target_node"          { default = "pve2" }
 variable "storage"              { default = "local-lvm" }
 variable "template_id"          { type = number }
