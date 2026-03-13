@@ -1,0 +1,83 @@
+# Site 1 Design Freeze
+
+## Objective
+Site 1 is the on-prem site hosted on Proxmox node `pve2`.
+
+It contains:
+- `cia-pf-s1` : pfSense firewall
+- `cia-netbox` : NetBox
+- `cia-elastic` : Elasticsearch + Kibana
+
+## Current Proxmox Context
+Cluster nodes:
+- `pve2`
+- `pve3`
+
+Site 1 node:
+- `pve2`
+
+Template:
+- VM ID: `9000`
+- Name: `ubuntu-2404-template`
+
+## Site 1 VM Inventory
+- VM 400 = `cia-pf-s1`
+- VM 401 = `cia-netbox`
+- VM 402 = `cia-elastic`
+
+## Site 1 Network Plan
+- pfSense WAN -> `vmbr0`
+- pfSense LAN -> `vmbr1`
+- NetBox -> `vmbr1`
+- Elastic -> `vmbr1`
+
+## Intended IP Plan
+- pfSense S1 LAN: `10.1.0.1/24`
+- NetBox: `10.1.0.10/24`
+- Elastic: `10.1.0.20/24`
+
+## Default Gateway
+- NetBox gateway: `10.1.0.1`
+- Elastic gateway: `10.1.0.1`
+
+## Terraform Scope
+Terraform will manage:
+- VM creation
+- VM IDs and names
+- target node
+- CPU / RAM / disk
+- network bridge attachment
+- cloning Linux VMs from template
+- cloud-init networking for Linux VMs
+
+Terraform will not yet manage:
+- NetBox installation
+- Elasticsearch installation
+- pfSense firewall rules
+- OpenVPN
+- DNS forwarders
+
+## Ansible Scope
+Ansible will later manage:
+- NetBox installation/configuration
+- Elasticsearch/Kibana installation/configuration
+- agents and service configuration
+
+## First Milestone
+Terraform creates only `cia-netbox` successfully on `pve2`.
+---------------------------------------------
+target_node=pve2
+template_vm_id=9000
+site1_bridge=vmbr1
+netbox_vm_id=401
+elastic_vm_id=402
+pfsense_vm_id=400
+netbox_ip=10.1.0.10/24
+elastic_ip=10.1.0.20/24
+gateway=10.1.0.1
+--
+storage_name=local-lvm
+->
+local is for ISO/import/backup-type content in your setup, while local-lvm is 
+the storage that holds VM disk images, so local-lvm is the right Terraform disk target 
+for cia-netbox and cia-elastic. That also lines up with the assumptions used in the maintained bpg/proxmox provider examples.
