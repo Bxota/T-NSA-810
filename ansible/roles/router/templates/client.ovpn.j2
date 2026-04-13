@@ -1,7 +1,7 @@
 client
 dev tun
 proto udp
-remote 192.168.1.37 1194
+remote {{ openvpn_server_ip }} {{ vpn_port | default(1194) }}
 
 resolv-retry infinite
 nobind
@@ -12,6 +12,9 @@ cipher AES-256-GCM
 auth SHA256
 key-direction 1
 verb 3
+
+# Prevent the client from accepting a pushed route to its own local LAN.
+pull-filter ignore "route {{ lan_s2.split('/')[0] }} 255.255.255.0"
 
 <ca>
 {{ ca_cert.content | b64decode }}

@@ -1,4 +1,4 @@
-port 1194
+port {{ vpn_port | default(1194) }}
 proto udp
 dev tun
 
@@ -13,9 +13,9 @@ auth SHA256
 
 server {{ vpn_subnet.split('/')[0] }} 255.255.255.0
 
-# Push routes to internal networks
+# Push uniquement le LAN distant (S1) au client S2.
+# Ne pas pousser lan_s2 ici, sinon le client route son propre LAN via le tunnel.
 push "route {{ lan_s1.split('/')[0] }} 255.255.255.0"
-push "route {{ lan_s2.split('/')[0] }} 255.255.255.0"
 push "dhcp-option DNS 8.8.8.8"
 
 keepalive 10 120

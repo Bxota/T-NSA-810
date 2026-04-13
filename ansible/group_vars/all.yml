@@ -1,14 +1,19 @@
-# Injecté depuis Doppler via env vars
+# ── Secrets injectés depuis Doppler via env vars ──────────────────────────────
 netbox_secret_key:     "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
 netbox_db_password:    "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
 netbox_admin_user:     "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
 netbox_admin_password: "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
 elastic_password:      "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
 kibana_password:       "{{ lookup('env', 'KIBANA_PASSWORD') }}"
-openvpn_ca_pass:       "{{ lookup('env', 'OPENVPN_CA_PASS') }}"
 
+# ── Réseau ────────────────────────────────────────────────────────────────────
 domain_s1: "s1.local"
 domain_s2: "s2.local"
-vpn_subnet: "10.8.0.0/24"
-lan_s1: "10.1.0.0/24"
-lan_s2: "10.2.0.0/24"
+lan_s1:    "10.1.0.0/24"
+lan_s2:    "10.2.0.0/24"
+
+# ── VPN ───────────────────────────────────────────────────────────────────────
+vpn_subnet:        "10.8.0.0/24"
+vpn_port:          1194
+# IP WAN publique du router-s1 (le router-s2 s'y connecte pour établir le tunnel)
+openvpn_server_ip: "{{ lookup('env', 'OPENVPN_SERVER_IP') | default(hostvars['router_s1']['ansible_default_ipv4']['address'], true) }}"

@@ -24,18 +24,19 @@
     name: netbox
     owner: netbox
 
-- name: Clone NetBox v4.2
-  git:
-    repo: https://github.com/netbox-community/netbox.git
-    dest: /opt/netbox
-    version: v4.2.0
-    depth: 1
-
 - name: Create netbox system user
   user:
     name: netbox
     system: yes
     home: /opt/netbox
+
+- name: Clone NetBox v4.2
+  become_user: netbox
+  git:
+    repo: https://github.com/netbox-community/netbox.git
+    dest: /opt/netbox
+    version: v4.2.0
+    depth: 1
 
 - name: Generate SECRET_KEY if not provided or too short
   shell: |

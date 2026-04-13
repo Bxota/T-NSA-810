@@ -1,7 +1,0 @@
-- name: restart openvpn
-  systemd:
-    name: openvpn-server@server
-    state: restarted
-
-- name: save iptables
-  shell: netfilter-persistent save
