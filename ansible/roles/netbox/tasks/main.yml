@@ -28,9 +28,30 @@
   user:
     name: netbox
     system: yes
-    home: /opt/netbox
+    home: /home/netbox
+    create_home: yes
+
+- name: Check if /opt/netbox is a git repo
+  stat:
+    path: /opt/netbox/.git
+  register: netbox_git_dir
+
+- name: Remove /opt/netbox if not a git repo (leftover from failed run)
+  file:
+    path: /opt/netbox
+    state: absent
+  when: not netbox_git_dir.stat.exists
+
+- name: Create /opt/netbox directory owned by netbox
+  file:
+    path: /opt/netbox
+    state: directory
+    owner: netbox
+    group: netbox
+    mode: '0755'
 
 - name: Clone NetBox v4.2
+  become: yes
   become_user: netbox
   git:
     repo: https://github.com/netbox-community/netbox.git

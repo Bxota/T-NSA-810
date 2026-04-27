@@ -95,6 +95,11 @@
   poll: 10
   when: router_role == "server"
 
+- name: "[server] Reconnecter SSH après génération DH"
+  wait_for_connection:
+    timeout: 30
+  when: router_role == "server"
+
 - name: "[server] Générer clé TLS auth"
   shell: openvpn --genkey secret /etc/openvpn/ta.key
   args:
