@@ -17,7 +17,7 @@ module "router_s1" {
   disk_size   = 10
   wan_bridge  = "vmbr0" # WAN → internet
   lan_bridge  = "vmbr1" # LAN S1 10.1.0.0/24
-  lan_ip      = "10.1.0.1/24"
+  lan_ip      = local.ip.router_s1_lan
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -36,8 +36,8 @@ module "netbox" {
   memory      = 4096
   disk_size   = 40
   bridge      = "vmbr1"
-  ip_address  = "10.1.0.10/24"
-  gateway     = "10.1.0.1"
+  ip_address  = local.ip.netbox
+  gateway     = local.gw.s1
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -56,8 +56,8 @@ module "elasticsearch" {
   memory      = 8192
   disk_size   = 80
   bridge      = "vmbr1"
-  ip_address  = "10.1.0.20/24"
-  gateway     = "10.1.0.1"
+  ip_address  = local.ip.elasticsearch
+  gateway     = local.gw.s1
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -82,7 +82,7 @@ module "router_s2" {
   disk_size   = 10
   wan_bridge  = "vmbr0" # WAN → internet
   lan_bridge  = "vmbr2" # LAN S2 10.2.0.0/24
-  lan_ip      = "10.2.0.1/24"
+  lan_ip      = local.ip.router_s2_lan
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -101,8 +101,8 @@ module "bastion" {
   memory      = 2048
   disk_size   = 20
   bridge      = "vmbr2"
-  ip_address  = "10.2.0.5/24"
-  gateway     = "10.2.0.1"
+  ip_address  = local.ip.bastion
+  gateway     = local.gw.s2
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -121,8 +121,8 @@ module "webserver" {
   memory      = 2048
   disk_size   = 30
   bridge      = "vmbr2"
-  ip_address  = "10.2.0.30/24"
-  gateway     = "10.2.0.1"
+  ip_address  = local.ip.webserver
+  gateway     = local.gw.s2
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password

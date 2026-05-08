@@ -13,6 +13,7 @@ load_secrets() {
   export NETBOX_DB_PASSWORD=$(doppler secrets get NETBOX_DB_PASSWORD --plain)
   export NETBOX_ADMIN_USER=$(doppler secrets get NETBOX_ADMIN_USER --plain)
   export NETBOX_ADMIN_PASSWORD=$(doppler secrets get NETBOX_ADMIN_PASSWORD --plain)
+  export NETBOX_API_TOKEN=$(doppler secrets get NETBOX_API_TOKEN --plain)
   export ELASTIC_PASSWORD=$(doppler secrets get ELASTIC_PASSWORD --plain)
   export KIBANA_PASSWORD=$(doppler secrets get KIBANA_PASSWORD --plain)
 
@@ -103,6 +104,72 @@ case "$1" in
     echo "--- Terraform init ---"
     cd terraform/
     terraform init
+    cd ..
+    echo "--- Terraform init (netbox-ipam) ---"
+    cd terraform/netbox-ipam/
+    terraform init
+    ;;
+
+  netbox-bootstrap)
+    # Phase 1 : router_s1 + netbox VM créés ensemble (netbox a besoin du router pour internet)
+    echo "--- Terraform apply (router_s1 + NetBox VM) ---"
+    load_secrets
+    build_tf_args
+    cd terraform/
+    terraform apply -auto-approve \
+      -target=module.router_s1 \
+      -target=module.netbox \
+      "${TF_ARGS[@]}"
+    cd ..
+    echo "--- Nettoyage SSH known_hosts ---"
+    ssh-keygen -R "10.1.0.1"  2>/dev/null || true
+    ssh-keygen -R "10.1.0.10" 2>/dev/null || true
+    echo "--- Attente démarrage VMs (60s) ---"
+    sleep 60
+    # Phase 2 : router_s1 configuré en premier (NAT + forwarding) pour que netbox ait internet
+    load_secrets
+    cat > /tmp/cia_ssh_config <<EOF
+Host *
+    ServerAliveInterval 30
+    ServerAliveCountMax 20
+
+Host ${PROXMOX_S1_IP}
+    User root
+    IdentityFile /tmp/cia_infra
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
+Host 10.1.0.*
+    ProxyJump root@${PROXMOX_S1_IP}
+    User cia
+    IdentityFile /tmp/cia_infra
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+EOF
+    export ANSIBLE_SSH_ARGS="-F /tmp/cia_ssh_config"
+    cd ansible/
+    ansible-galaxy collection install -r requirements.yml -p ./collections
+    ansible-playbook -i inventory/hosts.yml site.yml --limit router_s1
+    echo "--- Ansible (rôle netbox) ---"
+    ansible-playbook -i inventory/hosts.yml site.yml --limit netbox
+    rm -f /tmp/cia_ssh_config
+    ;;
+
+  ipam)
+    echo "--- Terraform apply (IPAM NetBox) ---"
+    load_secrets
+    # Tunnel SSH vers NetBox (10.1.0.10:80 → localhost:18080) via Proxmox
+    ssh -i /tmp/cia_infra \
+      -L 18080:10.1.0.10:80 \
+      -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+      root@${PROXMOX_S1_IP} &
+    TUNNEL_PID=$!
+    sleep 2
+    cd terraform/netbox-ipam/
+    terraform apply -auto-approve \
+      -var "netbox_token=$(doppler secrets get NETBOX_API_TOKEN --plain)" \
+      -var "netbox_url=http://localhost:18080"
+    kill $TUNNEL_PID 2>/dev/null || true
     ;;
 
   infra)
@@ -130,6 +197,10 @@ case "$1" in
     echo "--- Ansible playbooks ---"
     load_secrets
     cat > /tmp/cia_ssh_config <<EOF
+Host *
+    ServerAliveInterval 30
+    ServerAliveCountMax 20
+
 Host ${PROXMOX_S1_IP}
     User root
     IdentityFile /tmp/cia_infra
@@ -150,7 +221,7 @@ Host 10.1.0.*
     UserKnownHostsFile /dev/null
 
 Host 10.2.0.*
-  ProxyJump root@${PROXMOX_S2_IP}
+    ProxyJump root@${PROXMOX_S2_IP}
     User cia
     IdentityFile /tmp/cia_infra
     StrictHostKeyChecking no
@@ -206,6 +277,8 @@ EOF
     $0 bootstrap-s1
     $0 bootstrap-s2
     $0 init
+    $0 netbox-bootstrap
+    $0 ipam
     $0 infra
     echo "--- Attente démarrage VMs (120s) ---"
     sleep 120
@@ -228,11 +301,13 @@ EOF
     echo "                     Évite le conflit avec router_s1 (10.1.0.1)"
     echo "                     Met à jour PROXMOX_S2_IP dans Doppler automatiquement"
     echo "  bootstrap-s2       Crée vmbr2 + template Ubuntu sur pve2, injecte clé SSH"
-    echo "  init               Terraform init"
-    echo "  infra              Terraform apply (crée les 6 VMs)"
+    echo "  init               Terraform init (terraform/ + terraform/netbox-ipam/)"
+    echo "  netbox-bootstrap   Terraform (router_s1 + NetBox VM) + Ansible (router_s1 → netbox)"
+    echo "  ipam               Terraform apply netbox-ipam/ (sites, préfixes, IPs dans NetBox)"
+    echo "  infra              Terraform apply (6 VMs)"
     echo "  destroy            Terraform destroy"
     echo "  config             Ansible (configure tous les services)"
-    echo "  all                Enchaîne : bootstrap-s1 → bootstrap-s2 → infra → config"
+    echo "  all                Enchaîne : bootstrap → netbox-bootstrap → ipam → infra → config"
     echo "  ssh-key            Exporte la clé SSH depuis Doppler → /tmp/cia_infra"
     exit 1
     ;;

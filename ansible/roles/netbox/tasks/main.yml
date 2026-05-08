@@ -11,6 +11,8 @@
       - git
       - libpq-dev
     state: present
+  async: 600
+  poll: 20
 
 - name: Create netbox DB user
   become_user: postgres
@@ -88,6 +90,8 @@
   command: /opt/netbox/upgrade.sh
   args:
     creates: /opt/netbox/venv/bin/gunicorn
+  async: 1800
+  poll: 30
 
 - name: Run database migrations
   command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py migrate --no-input
@@ -168,3 +172,21 @@
   loop:
     - netbox
     - nginx
+
+- name: Create Terraform API token
+  shell: |
+    /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py shell -c "
+    from users.models import Token
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    user = User.objects.get(username='{{ netbox_admin_user }}')
+    token, created = Token.objects.get_or_create(
+        user=user,
+        defaults={'key': '{{ netbox_terraform_token }}', 'description': 'Terraform IPAM'}
+    )
+    if not created and token.key != '{{ netbox_terraform_token }}':
+        token.key = '{{ netbox_terraform_token }}'
+        token.save()
+    "
+  become_user: netbox
+  changed_when: false

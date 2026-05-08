@@ -1,10 +1,11 @@
 # ── Secrets injectés depuis Doppler via env vars ──────────────────────────────
-netbox_secret_key:     "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
-netbox_db_password:    "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
-netbox_admin_user:     "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
-netbox_admin_password: "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
-elastic_password:      "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
-kibana_password:       "{{ lookup('env', 'KIBANA_PASSWORD') }}"
+netbox_secret_key:      "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
+netbox_db_password:     "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
+netbox_admin_user:      "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
+netbox_admin_password:  "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
+netbox_terraform_token: "{{ lookup('env', 'NETBOX_API_TOKEN') }}"
+elastic_password:       "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
+kibana_password:        "{{ lookup('env', 'KIBANA_PASSWORD') }}"
 
 # ── Réseau ────────────────────────────────────────────────────────────────────
 domain_s1: "s1.local"
