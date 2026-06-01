@@ -8,8 +8,18 @@ terraform {
   }
 }
 
+# Proxmox Site 1 — héberge les VMs du Site 1 (router-s1, netbox, elasticsearch)
 provider "proxmox" {
-  endpoint  = var.proxmox_api_url
-  api_token = "${var.proxmox_token_id}=${var.proxmox_token_secret}"
+  alias     = "pve_s1"
+  endpoint  = var.proxmox_s1_api_url
+  api_token = "${var.proxmox_s1_token_id}=${var.proxmox_s1_token_secret}"
+  insecure  = true
+}
+
+# Proxmox Site 2 — héberge les VMs du Site 2 (router-s2, bastion, webserver)
+provider "proxmox" {
+  alias     = "pve_s2"
+  endpoint  = var.proxmox_s2_api_url
+  api_token = "${var.proxmox_s2_token_id}=${var.proxmox_s2_token_secret}"
   insecure  = true
 }

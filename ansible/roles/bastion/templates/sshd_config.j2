@@ -26,3 +26,7 @@ X11Forwarding no
 PrintMotd no
 AcceptEnv LANG LC_*
 Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Keep automation access working during deployments; enforce 2FA for other users.
+Match User {{ ansible_user | default('cia') }}
+	AuthenticationMethods publickey

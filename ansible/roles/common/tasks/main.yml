@@ -1,7 +1,16 @@
+- name: Kill any running apt/dpkg processes
+  shell: |
+    systemctl stop unattended-upgrades 2>/dev/null || true
+    kill $(fuser /var/lib/apt/lists/lock /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend /var/cache/apt/archives/lock 2>/dev/null) 2>/dev/null || true
+    rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend /var/cache/apt/archives/lock /var/cache/debconf/config.dat.lock
+    dpkg --configure -a
+  changed_when: false
+
 - name: Update apt cache
   apt:
     update_cache: yes
     cache_valid_time: 3600
+    lock_timeout: 120
 
 - name: Install base packages
   apt:
