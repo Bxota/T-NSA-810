@@ -48,6 +48,14 @@ resource "proxmox_virtual_environment_vm" "vm" {
     dedicated = var.memory
   }
 
+  disk {
+  datastore_id = var.storage
+  interface    = "scsi0"
+  size         = var.disk_size
+  iothread     = true
+  file_format  = "raw"
+  }
+
   scsi_hardware = "virtio-scsi-single"
 
   network_device {
