@@ -1,15 +1,22 @@
-variable "proxmox_api_url"      { type = string }
-variable "proxmox_token_id"     { type = string }
-variable "proxmox_token_secret" {
+variable "PROXMOX_API_URL"      { type = string }
+variable "PROXMOX_TOKEN_ID"     { type = string }
+variable "PROXMOX_TOKEN_SECRET" {
   type      = string
   sensitive = true
 }
-variable "ssh_public_key"       { type = string }
-variable "vm_user"              { default = "cia" }
-variable "vm_password"          {
+variable "SSH_PUBLIC_KEY"  { type = string }
+variable "SSH_PRIVATE_KEY" {
   type      = string
   sensitive = true
 }
-variable "target_node"          { default = "pve" }
-variable "storage"              { default = "local-lvm" }
-variable "template_id"          { type = number }
+variable "VM_USER"     { default = "cia" }
+variable "VM_PASSWORD" {
+  type      = string
+  sensitive = true
+}
+variable "TARGET_NODE" { default = "pve" }
+variable "STORAGE"     { default = "local" }
+variable "TEMPLATE_ID" {
+  type    = number
+  default = 9000
+}

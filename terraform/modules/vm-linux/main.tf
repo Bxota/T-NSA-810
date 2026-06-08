@@ -1,8 +1,6 @@
 terraform {
   required_providers {
-    proxmox = {
-      source = "bpg/proxmox"
-    }
+    proxmox = { source = "bpg/proxmox" }
   }
 }
 
@@ -27,8 +25,9 @@ resource "proxmox_virtual_environment_vm" "vm" {
   node_name = var.target_node
 
   clone {
-    vm_id = var.clone
-    full  = true
+    vm_id        = var.clone
+    full         = true
+    datastore_id = var.storage
   }
 
   agent {
@@ -64,6 +63,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   initialization {
+    datastore_id = var.storage  # cloud-init drive storage
     ip_config {
       ipv4 {
         address = var.ip_address
@@ -83,3 +83,4 @@ resource "proxmox_virtual_environment_vm" "vm" {
 }
 
 output "vm_name" { value = proxmox_virtual_environment_vm.vm.name }
+output "vm_ip"   { value = var.ip_address }

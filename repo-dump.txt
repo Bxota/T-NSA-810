@@ -1,0 +1,1866 @@
+﻿=== REPO DUMP - 2026-06-08 11:05 ===
+
+--- STRUCTURE DU REPO ---
+          [DIR]  .git
+          [DIR]  .idea
+          [DIR]  ansible
+          [DIR]  docs
+          [DIR]  terraform
+          [FILE] .gitignore
+          [FILE] archi.txt
+          [FILE] deploy.sh
+          [FILE] dump-repo.ps1
+          [FILE] readme.md
+          [FILE] TODO.md
+          [FILE] tunnel.sh
+            [DIR]  inspectionProfiles
+            [FILE] .gitignore
+            [FILE] modules.xml
+            [FILE] T-NSA-810-BDX_1.iml
+            [FILE] vcs.xml
+            [FILE] workspace.xml
+              [FILE] Project_Default.xml
+            [DIR]  group_vars
+            [DIR]  inventory
+            [DIR]  roles
+            [FILE] requirements.yml
+            [FILE] site.yml
+              [FILE] all.yml
+              [FILE] hosts.yml
+              [DIR]  bastion
+              [DIR]  common
+              [DIR]  elasticsearch
+              [DIR]  filebeat
+              [DIR]  netbox
+              [DIR]  openvpn
+              [DIR]  proxmox-bootstrap
+              [DIR]  webserver
+                [DIR]  handlers
+                [DIR]  tasks
+                [DIR]  templates
+                  [FILE] main.yml
+                  [FILE] main.yml
+                  [FILE] audit.rules.j2
+                  [FILE] sshd_config.j2
+                [DIR]  handlers
+                [DIR]  tasks
+                  [FILE] main.yml
+                  [FILE] main.yml
+                [DIR]  handlers
+                [DIR]  tasks
+                [DIR]  templates
+                  [FILE] main.yml
+                  [FILE] main.yml
+                  [FILE] elasticsearch.yml.j2
+                  [FILE] kibana.yml.j2
+                [DIR]  handlers
+                [DIR]  tasks
+                [DIR]  templates
+                  [FILE] main.yml
+                  [FILE] main.yml
+                  [FILE] filebeat.yml.j2
+                [DIR]  handlers
+                [DIR]  tasks
+                [DIR]  templates
+                  [FILE] main.yml
+                  [FILE] main.yml
+                  [FILE] configuration.py.j2
+                  [FILE] netbox.service.j2
+                  [FILE] nginx.conf.j2
+                [DIR]  handlers
+                [DIR]  tasks
+                [DIR]  templates
+                  [FILE] main.yml
+                  [FILE] main.yml
+                  [FILE] client.ovpn.j2
+                  [FILE] server.conf.j2
+                [DIR]  handlers
+                [DIR]  tasks
+                  [FILE] main.yml
+                  [FILE] main.yml
+                [DIR]  handlers
+                [DIR]  tasks
+                [DIR]  templates
+                  [FILE] main.yml
+                  [FILE] main.yml
+                  [FILE] nginx.conf.j2
+            [FILE] gantt.html
+            [FILE] infra.drawio
+            [FILE] infra.png
+            [FILE] infra_V3.drawio
+            [FILE] infra_V3.png
+            [FILE] kickoff.pdf
+            [FILE] project.pdf
+            [DIR]  modules
+            [FILE] .gitignore
+            [FILE] main.tf
+            [FILE] outputs.tf
+            [FILE] providers.tf
+            [FILE] variables.tf
+              [DIR]  vm-linux
+              [DIR]  vm-pfsense
+                [FILE] main.tf
+                [FILE] main.tf
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\.idea\inspectionProfiles\Project_Default.xml  (31 lignes)
+------------------------------------------------------
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myValues">
+        <value>
+          <list size="1">
+            <item index="0" class="java.lang.String" itemvalue="href" />
+          </list>
+        </value>
+      </option>
+      <option name="myCustomValuesEnabled" value="true" />
+    </inspection_tool>
+    <inspection_tool class="HtmlUnknownTag" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myValues">
+        <value>
+          <list size="7">
+            <item index="0" class="java.lang.String" itemvalue="nobr" />
+            <item index="1" class="java.lang.String" itemvalue="noembed" />
+            <item index="2" class="java.lang.String" itemvalue="comment" />
+            <item index="3" class="java.lang.String" itemvalue="noscript" />
+            <item index="4" class="java.lang.String" itemvalue="embed" />
+            <item index="5" class="java.lang.String" itemvalue="script" />
+            <item index="6" class="java.lang.String" itemvalue="h1" />
+          </list>
+        </value>
+      </option>
+      <option name="myCustomValuesEnabled" value="true" />
+    </inspection_tool>
+  </profile>
+</component>
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\.idea\modules.xml  (8 lignes)
+------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/T-NSA-810-BDX_1.iml" filepath="$PROJECT_DIR$/.idea/T-NSA-810-BDX_1.iml" />
+    </modules>
+  </component>
+</project>
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\.idea\vcs.xml  (6 lignes)
+------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+  </component>
+</project>
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\.idea\workspace.xml  (54 lignes)
+------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c25f5848-7a71-40c4-902c-7e5dafb00a3b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="3EqasRwnDGplV5UErVTykfkGFDs" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-WS-243.22562.112" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c25f5848-7a71-40c4-902c-7e5dafb00a3b" name="Changes" comment="" />
+      <created>1780908760551</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1780908760551</updated>
+      <workItem from="1780908761898" duration="293000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\group_vars\all.yml  (14 lignes)
+------------------------------------------------------
+# Injecté depuis Doppler via env vars
+netbox_secret_key:     "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
+netbox_db_password:    "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
+netbox_admin_user:     "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
+netbox_admin_password: "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
+elastic_password:      "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
+kibana_password:       "{{ lookup('env', 'KIBANA_PASSWORD') }}"
+openvpn_ca_pass:       "{{ lookup('env', 'OPENVPN_CA_PASS') }}"
+
+domain_s1: "s1.local"
+domain_s2: "s2.local"
+vpn_subnet: "10.8.0.0/24"
+lan_s1: "10.1.0.0/24"
+lan_s2: "10.2.0.0/24"
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\inventory\hosts.yml  (33 lignes)
+------------------------------------------------------
+all:
+  vars:
+    ansible_user: cia
+    ansible_ssh_private_key_file: /tmp/cia_infra
+    ansible_ssh_common_args: >-
+      -o ProxyCommand="ssh -o StrictHostKeyChecking=no -W %h:%p root@192.168.1.37"
+      -o StrictHostKeyChecking=no
+
+  hosts:
+    proxmox:
+      ansible_host: 192.168.1.37
+      ansible_user: root
+      ansible_ssh_private_key_file: ~/.ssh/id_rsa
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+
+  children:
+    site1:
+      hosts:
+        netbox:
+          ansible_host: 10.1.0.10
+        elasticsearch:
+          ansible_host: 10.1.0.20
+
+    site2:
+      hosts:
+        bastion:
+          ansible_host: 10.2.0.5
+        webserver:
+          ansible_host: 10.2.0.30
+          ansible_ssh_common_args: >-
+            -o ProxyCommand="ssh -o StrictHostKeyChecking=no -W %h:%p root@192.168.1.37"
+            -o ProxyJump=cia@10.2.0.5
+            -o StrictHostKeyChecking=no
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\requirements.yml  (2 lignes)
+------------------------------------------------------
+collections:
+  - name: community.general
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\bastion\handlers\main.yml  (9 lignes)
+------------------------------------------------------
+- name: restart sshd
+  systemd:
+    name: ssh
+    state: restarted
+
+- name: restart auditd
+  systemd:
+    name: auditd
+    state: restarted
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\bastion\tasks\main.yml  (37 lignes)
+------------------------------------------------------
+- name: Install bastion packages
+  apt:
+    name:
+      - openssh-server
+      - libpam-google-authenticator
+      - auditd
+      - fail2ban
+    state: present
+
+- name: Harden sshd_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    validate: /usr/sbin/sshd -t -f %s
+  notify: restart sshd
+
+- name: Configure PAM 2FA
+  lineinfile:
+    path: /etc/pam.d/sshd
+    insertbefore: BOF
+    line: "auth required pam_google_authenticator.so"
+
+- name: Configure auditd rules
+  template:
+    src: audit.rules.j2
+    dest: /etc/audit/rules.d/cia.rules
+  notify: restart auditd
+
+- name: Enable services
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - ssh
+    - auditd
+    - fail2ban
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\bastion\templates\audit.rules.j2  (20 lignes)
+------------------------------------------------------
+# CIA - Audit rules
+-D
+-b 8192
+-f 1
+
+# Surveiller les connexions SSH
+-w /var/log/auth.log -p wa -k auth
+
+# Surveiller les modifications de fichiers sensibles
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+
+# Surveiller les appels système critiques
+-a always,exit -F arch=b64 -S execve -k exec
+-a always,exit -F arch=b32 -S execve -k exec
+
+# Surveiller les connexions réseau
+-a always,exit -F arch=b64 -S connect -k network
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\bastion\templates\sshd_config.j2  (28 lignes)
+------------------------------------------------------
+Port 22
+Protocol 2
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+LoginGraceTime 30
+PermitRootLogin no
+StrictModes yes
+MaxAuthTries 3
+MaxSessions 5
+
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication yes
+
+AuthenticationMethods publickey,keyboard-interactive
+
+UsePAM yes
+
+X11Forwarding no
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\common\handlers\main.yml  (4 lignes)
+------------------------------------------------------
+- name: restart sshd
+  systemd:
+    name: ssh
+    state: restarted
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\common\tasks\main.yml  (37 lignes)
+------------------------------------------------------
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - curl
+      - wget
+      - git
+      - vim
+      - htop
+      - ufw
+      - fail2ban
+      - qemu-guest-agent
+      - acl
+      - python3-psycopg2
+    state: present
+
+# - name: Enable qemu-guest-agent
+#   systemd:
+#     name: qemu-guest-agent
+#     enabled: yes
+#     state: started
+#   ignore_errors: yes  # Le canal virtio est activé via Terraform séparément
+
+- name: Disable password SSH auth
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication no"
+  notify: restart sshd
+
+- name: Set timezone
+  timezone:
+    name: Europe/Paris
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\elasticsearch\handlers\main.yml  (9 lignes)
+------------------------------------------------------
+- name: restart elasticsearch
+  systemd:
+    name: elasticsearch
+    state: restarted
+
+- name: restart kibana
+  systemd:
+    name: kibana
+    state: restarted
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\elasticsearch\tasks\main.yml  (115 lignes)
+------------------------------------------------------
+- name: Add Elastic GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elastic repo
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+
+- name: Install Elasticsearch + Kibana
+  apt:
+    name:
+      - elasticsearch
+      - kibana
+      - logstash
+    state: present
+    update_cache: yes
+
+- name: Remove SSL keystore entries left by auto-configuration
+  shell: |
+    for key in \
+      xpack.security.transport.ssl.keystore.secure_password \
+      xpack.security.transport.ssl.truststore.secure_password \
+      xpack.security.http.ssl.keystore.secure_password \
+      xpack.security.http.ssl.truststore.secure_password; do
+      /usr/share/elasticsearch/bin/elasticsearch-keystore remove "$key" 2>/dev/null || true
+    done
+  become: yes
+
+- name: Configure JVM heap size
+  copy:
+    dest: /etc/elasticsearch/jvm.options.d/heap.options
+    content: |
+      -Xms512m
+      -Xmx512m
+  notify: restart elasticsearch
+
+- name: Deploy elasticsearch.yml
+  template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+  notify: restart elasticsearch
+
+- name: Deploy kibana.yml
+  template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+  notify: restart kibana
+
+- name: Enable and start elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
+- name: Wait for Elasticsearch to be ready
+  wait_for:
+    host: localhost
+    port: 9200
+    delay: 10
+    timeout: 60
+
+- name: Reset elastic user to auto password and capture it
+  shell: |
+    /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -a --batch 2>&1 \
+      | grep "New value:" | awk '{print $NF}'
+  register: elastic_auto_password
+  become: yes
+
+- name: Set elastic user password to Doppler value via API
+  uri:
+    url: "http://localhost:9200/_security/user/elastic/_password"
+    method: POST
+    body_format: json
+    body:
+      password: "{{ elastic_password }}"
+    headers:
+      Content-Type: "application/json"
+    url_username: "elastic"
+    url_password: "{{ elastic_auto_password.stdout | trim }}"
+    force_basic_auth: yes
+    validate_certs: no
+  when: elastic_auto_password.stdout | trim != ""
+
+- name: Reset kibana_system user to auto password and capture it
+  shell: |
+    /usr/share/elasticsearch/bin/elasticsearch-reset-password -u kibana_system -a --batch 2>&1 \
+      | grep "New value:" | awk '{print $NF}'
+  register: kibana_auto_password
+  become: yes
+
+- name: Set kibana_system password to Doppler value via API
+  uri:
+    url: "http://localhost:9200/_security/user/kibana_system/_password"
+    method: POST
+    body_format: json
+    body:
+      password: "{{ kibana_password }}"
+    headers:
+      Content-Type: "application/json"
+    url_username: "elastic"
+    url_password: "{{ elastic_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+  when: kibana_auto_password.stdout | trim != ""
+
+- name: Enable kibana and logstash
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - kibana
+    - logstash
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\elasticsearch\templates\elasticsearch.yml.j2  (15 lignes)
+------------------------------------------------------
+cluster.name: cia-cluster
+node.name: cia-elastic
+
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+network.host: 0.0.0.0
+http.port: 9200
+
+discovery.type: single-node
+
+xpack.security.enabled: true
+xpack.security.authc.api_key.enabled: true
+xpack.security.transport.ssl.enabled: false
+xpack.security.http.ssl.enabled: false
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\elasticsearch\templates\kibana.yml.j2  (12 lignes)
+------------------------------------------------------
+server.port: 5601
+server.host: "0.0.0.0"
+server.name: "cia-kibana"
+
+elasticsearch.hosts: ["http://localhost:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ kibana_password }}"
+
+logging.appenders.file.type: file
+logging.appenders.file.fileName: /var/log/kibana/kibana.log
+logging.appenders.file.layout.type: json
+logging.root.appenders: [default, file]
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\filebeat\handlers\main.yml  (4 lignes)
+------------------------------------------------------
+- name: restart filebeat
+  systemd:
+    name: filebeat
+    state: restarted
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\filebeat\tasks\main.yml  (27 lignes)
+------------------------------------------------------
+- name: Add Elastic GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elastic repo
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+
+- name: Install Filebeat
+  apt:
+    name: filebeat
+    state: present
+    update_cache: yes
+
+- name: Deploy filebeat.yml
+  template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+  notify: restart filebeat
+
+- name: Enable filebeat
+  systemd:
+    name: filebeat
+    enabled: yes
+    state: started
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\filebeat\templates\filebeat.yml.j2  (14 lignes)
+------------------------------------------------------
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/*.log
+      - /var/log/syslog
+
+output.elasticsearch:
+  hosts: ["http://10.1.0.20:9200"]
+  username: "elastic"
+  password: "{{ elastic_password }}"
+
+setup.kibana:
+  host: "http://10.1.0.20:5601"
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\netbox\handlers\main.yml  (13 lignes)
+------------------------------------------------------
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: restart netbox
+  systemd:
+    name: netbox
+    state: restarted
+
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\netbox\tasks\main.yml  (148 lignes)
+------------------------------------------------------
+- name: Install dependencies
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+      - postgresql
+      - postgresql-contrib
+      - redis-server
+      - nginx
+      - git
+      - libpq-dev
+    state: present
+
+- name: Create netbox DB user
+  become_user: postgres
+  postgresql_user:
+    name: netbox
+    password: "{{ netbox_db_password }}"
+
+- name: Create netbox database
+  become_user: postgres
+  postgresql_db:
+    name: netbox
+    owner: netbox
+
+- name: Clone NetBox v4.2
+  git:
+    repo: https://github.com/netbox-community/netbox.git
+    dest: /opt/netbox
+    version: v4.2.0
+    depth: 1
+
+- name: Create netbox system user
+  user:
+    name: netbox
+    system: yes
+    home: /opt/netbox
+
+- name: Generate SECRET_KEY if not provided or too short
+  shell: |
+    python3 -c "import secrets; print(secrets.token_urlsafe(60))" > /etc/netbox-secret-key
+    chmod 600 /etc/netbox-secret-key
+  args:
+    creates: /etc/netbox-secret-key
+  when: netbox_secret_key | length < 50
+
+- name: Read generated SECRET_KEY from file
+  slurp:
+    src: /etc/netbox-secret-key
+  register: generated_secret_key
+  when: netbox_secret_key | length < 50
+
+- name: Set netbox_secret_key from generated file
+  set_fact:
+    netbox_secret_key: "{{ generated_secret_key.content | b64decode | trim }}"
+  when: netbox_secret_key | length < 50
+
+- name: Deploy configuration.py
+  template:
+    src: configuration.py.j2
+    dest: /opt/netbox/netbox/netbox/configuration.py
+    owner: netbox
+
+- name: Run upgrade script (install venv + dependencies)
+  command: /opt/netbox/upgrade.sh
+  args:
+    creates: /opt/netbox/venv/bin/gunicorn
+
+- name: Run database migrations
+  command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py migrate --no-input
+  become_user: netbox
+
+- name: Create superuser
+  shell: |
+    /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py shell -c "
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    if not User.objects.filter(username='{{ netbox_admin_user }}').exists():
+        User.objects.create_superuser('{{ netbox_admin_user }}', 'admin@cia.local', '{{ netbox_admin_password }}')
+        print('created')
+    else:
+        print('exists')
+    "
+  become_user: netbox
+  register: superuser_result
+  changed_when: "'created' in superuser_result.stdout"
+
+- name: Create static directory and set ownership
+  file:
+    path: /opt/netbox/netbox/static
+    state: directory
+    owner: netbox
+    group: netbox
+    mode: "0755"
+
+- name: Set netbox ownership on /opt/netbox
+  file:
+    path: /opt/netbox
+    owner: netbox
+    group: netbox
+    recurse: yes
+
+- name: Collect static files
+  command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py collectstatic --no-input
+  become_user: netbox
+
+- name: Set static files permissions for nginx
+  file:
+    path: /opt/netbox/netbox/static
+    owner: netbox
+    group: www-data
+    mode: "0755"
+    recurse: yes
+
+- name: Deploy systemd service
+  template:
+    src: netbox.service.j2
+    dest: /etc/systemd/system/netbox.service
+  notify: reload systemd
+
+- name: Deploy nginx config for NetBox
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/netbox
+  notify: restart nginx
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/netbox
+    dest: /etc/nginx/sites-enabled/netbox
+    state: link
+  notify: restart nginx
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: Enable and start NetBox and nginx
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - netbox
+    - nginx
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\netbox\templates\configuration.py.j2  (42 lignes)
+------------------------------------------------------
+ALLOWED_HOSTS = ['*']
+
+DATABASE = {
+    'NAME': 'netbox',
+    'USER': 'netbox',
+    'PASSWORD': '{{ netbox_db_password }}',
+    'HOST': 'localhost',
+    'PORT': '',
+    'CONN_MAX_AGE': 300,
+}
+
+REDIS = {
+    'tasks': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'PASSWORD': '',
+        'DATABASE': 0,
+        'SSL': False,
+    },
+    'caching': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'PASSWORD': '',
+        'DATABASE': 1,
+        'SSL': False,
+    }
+}
+
+SECRET_KEY = '{{ netbox_secret_key }}'
+
+SUPERUSER_NAME     = '{{ netbox_admin_user }}'
+SUPERUSER_EMAIL    = 'admin@cia.local'
+SUPERUSER_PASSWORD = '{{ netbox_admin_password }}'
+
+ALLOWED_URL_SCHEMES = (
+    'file', 'ftp', 'ftps', 'http', 'https', 'irc', 'mailto',
+    'sftp', 'ssh', 'tel', 'telnet', 'tftp', 'vnc', 'xmpp',
+)
+
+LOGGING = {}
+DEBUG   = False
+PLUGINS = []
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\netbox\templates\netbox.service.j2  (24 lignes)
+------------------------------------------------------
+[Unit]
+Description=NetBox WSGI Service
+Documentation=https://docs.netbox.dev/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=netbox
+Group=netbox
+WorkingDirectory=/opt/netbox
+ExecStart=/opt/netbox/venv/bin/gunicorn \
+    --pythonpath /opt/netbox/netbox \
+    --bind 127.0.0.1:8001 \
+    --timeout 120 \
+    --workers 3 \
+    netbox.wsgi
+
+Restart=on-failure
+RestartSec=30
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\netbox\templates\nginx.conf.j2  (17 lignes)
+------------------------------------------------------
+server {
+    listen 80;
+    server_name _;
+
+    client_max_body_size 25m;
+
+    location /static/ {
+        alias /opt/netbox/netbox/static/;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\openvpn\handlers\main.yml  (7 lignes)
+------------------------------------------------------
+- name: restart openvpn
+  systemd:
+    name: openvpn-server@server
+    state: restarted
+
+- name: save iptables
+  shell: netfilter-persistent save
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\openvpn\tasks\main.yml  (132 lignes)
+------------------------------------------------------
+- name: Install OpenVPN and Easy-RSA
+  apt:
+    name:
+      - openvpn
+      - easy-rsa
+      - iptables-persistent
+    state: present
+
+- name: Create Easy-RSA working directory
+  file:
+    path: /etc/openvpn/easy-rsa
+    state: directory
+    mode: "0700"
+
+- name: Copy Easy-RSA files
+  shell: cp -r /usr/share/easy-rsa/* /etc/openvpn/easy-rsa/
+  args:
+    creates: /etc/openvpn/easy-rsa/easyrsa
+
+- name: Initialize PKI
+  shell: ./easyrsa init-pki
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki
+
+- name: Build CA (nopass for automation)
+  shell: EASYRSA_BATCH=1 EASYRSA_CA_EXPIRE=3650 ./easyrsa build-ca nopass
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/ca.crt
+
+- name: Generate server certificate
+  shell: EASYRSA_BATCH=1 EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-server-full server nopass
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/issued/server.crt
+
+- name: Generate client certificate
+  shell: EASYRSA_BATCH=1 EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full client nopass
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/issued/client.crt
+
+- name: Generate DH parameters
+  shell: EASYRSA_BATCH=1 ./easyrsa gen-dh
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/dh.pem
+  async: 300
+  poll: 10
+
+- name: Generate TLS auth key
+  shell: openvpn --genkey secret /etc/openvpn/ta.key
+  args:
+    creates: /etc/openvpn/ta.key
+
+- name: Copy PKI files to OpenVPN directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    mode: "0600"
+  loop:
+    - src: /etc/openvpn/easy-rsa/pki/ca.crt
+      dest: /etc/openvpn/ca.crt
+    - src: /etc/openvpn/easy-rsa/pki/issued/server.crt
+      dest: /etc/openvpn/server.crt
+    - src: /etc/openvpn/easy-rsa/pki/private/server.key
+      dest: /etc/openvpn/server.key
+    - src: /etc/openvpn/easy-rsa/pki/dh.pem
+      dest: /etc/openvpn/dh.pem
+
+- name: Deploy OpenVPN server config
+  template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server/server.conf
+    mode: "0600"
+  notify: restart openvpn
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Set up NAT for VPN clients
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "{{ vpn_subnet }}"
+    jump: MASQUERADE
+  notify: save iptables
+
+- name: Enable and start OpenVPN
+  systemd:
+    name: openvpn-server@server
+    enabled: yes
+    state: started
+
+- name: Read CA cert
+  slurp:
+    src: /etc/openvpn/ca.crt
+  register: ca_cert
+
+- name: Read client cert
+  slurp:
+    src: /etc/openvpn/easy-rsa/pki/issued/client.crt
+  register: client_cert
+
+- name: Read client key
+  slurp:
+    src: /etc/openvpn/easy-rsa/pki/private/client.key
+  register: client_key
+
+- name: Read TLS auth key
+  slurp:
+    src: /etc/openvpn/ta.key
+  register: ta_key
+
+- name: Generate client .ovpn file on server
+  template:
+    src: client.ovpn.j2
+    dest: /etc/openvpn/client.ovpn
+    mode: "0600"
+
+- name: Fetch client .ovpn to local machine
+  fetch:
+    src: /etc/openvpn/client.ovpn
+    dest: "{{ playbook_dir }}/../client.ovpn"
+    flat: yes
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\openvpn\templates\client.ovpn.j2  (30 lignes)
+------------------------------------------------------
+client
+dev tun
+proto udp
+remote 192.168.1.37 1194
+
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+
+cipher AES-256-GCM
+auth SHA256
+key-direction 1
+verb 3
+
+<ca>
+{{ ca_cert.content | b64decode }}
+</ca>
+
+<cert>
+{{ client_cert.content | b64decode | regex_replace('(?s)^.*?(-----BEGIN CERTIFICATE-----)', '\\1') }}
+</cert>
+
+<key>
+{{ client_key.content | b64decode }}
+</key>
+
+<tls-auth>
+{{ ta_key.content | b64decode }}
+</tls-auth>
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\openvpn\templates\server.conf.j2  (31 lignes)
+------------------------------------------------------
+port 1194
+proto udp
+dev tun
+
+ca   /etc/openvpn/ca.crt
+cert /etc/openvpn/server.crt
+key  /etc/openvpn/server.key
+dh   /etc/openvpn/dh.pem
+
+tls-auth /etc/openvpn/ta.key 0
+cipher AES-256-GCM
+auth SHA256
+
+server {{ vpn_subnet.split('/')[0] }} 255.255.255.0
+
+# Push routes to internal networks
+push "route {{ lan_s1.split('/')[0] }} 255.255.255.0"
+push "route {{ lan_s2.split('/')[0] }} 255.255.255.0"
+push "dhcp-option DNS 8.8.8.8"
+
+keepalive 10 120
+max-clients 10
+
+user  nobody
+group nogroup
+persist-key
+persist-tun
+
+status  /var/log/openvpn/status.log
+log-append /var/log/openvpn/openvpn.log
+verb 3
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\proxmox-bootstrap\handlers\main.yml  (2 lignes)
+------------------------------------------------------
+- name: reload iptables
+  shell: netfilter-persistent reload
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\proxmox-bootstrap\tasks\main.yml  (50 lignes)
+------------------------------------------------------
+- name: Install iptables-persistent
+  apt:
+    name: iptables-persistent
+    state: present
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: NAT masquerade for site1 (vmbr1 -> vmbr0)
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: vmbr0
+    source: "{{ lan_s1 }}"
+    jump: MASQUERADE
+
+- name: NAT masquerade for site2 (vmbr2 -> vmbr0)
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: vmbr0
+    source: "{{ lan_s2 }}"
+    jump: MASQUERADE
+
+- name: DNAT OpenVPN UDP 1194 -> bastion
+  iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: vmbr0
+    protocol: udp
+    destination_port: "1194"
+    jump: DNAT
+    to_destination: "10.2.0.5:1194"
+
+- name: FORWARD rule for OpenVPN traffic to bastion
+  iptables:
+    chain: FORWARD
+    protocol: udp
+    destination: "10.2.0.5"
+    destination_port: "1194"
+    jump: ACCEPT
+
+- name: Save iptables rules (IPv4)
+  shell: netfilter-persistent save
+  notify: reload iptables
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\webserver\handlers\main.yml  (4 lignes)
+------------------------------------------------------
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\webserver\tasks\main.yml  (33 lignes)
+------------------------------------------------------
+- name: Install Nginx
+  apt:
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: yes
+
+- name: Deploy nginx site config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/cia
+  notify: restart nginx
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/cia
+    dest: /etc/nginx/sites-enabled/cia
+    state: link
+  notify: restart nginx
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: Enable nginx
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\roles\webserver\templates\nginx.conf.j2  (12 lignes)
+------------------------------------------------------
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    access_log /var/log/nginx/access.log;
+    error_log  /var/log/nginx/error.log;
+}
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\ansible\site.yml  (30 lignes)
+------------------------------------------------------
+---
+- name: Bootstrap Proxmox (NAT + port forwarding)
+  hosts: proxmox
+  become: true
+  roles: [proxmox-bootstrap]
+
+- name: Common setup all VMs
+  hosts: all:!proxmox
+  become: true
+  roles: [common]
+
+- name: Deploy NetBox
+  hosts: netbox
+  become: true
+  roles: [netbox]
+
+- name: Deploy Elasticsearch + Kibana
+  hosts: elasticsearch
+  become: true
+  roles: [elasticsearch, filebeat]
+
+- name: Deploy Bastion
+  hosts: bastion
+  become: true
+  roles: [bastion, openvpn, filebeat]
+
+- name: Deploy Webserver
+  hosts: webserver
+  become: true
+  roles: [webserver, filebeat]
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\archi.txt  (21 lignes)
+------------------------------------------------------
++---ansible
+|   +---group_vars
+|   |   +---all
+|   |   +---site1
+|   |   \---site2
+|   +---inventory
+|   +---playbooks
+|   \---roles
+|       +---bastion
+|       +---common
+|       +---elasticsearch
+|       +---filebeat
+|       +---netbox
+|       +---openvpn-client
+|       +---openvpn-server
+|       +---pfsense
+|       \---webserver     
+\---terraform
+    \---modules
+        +---vm-linux
+        \---vm-pfsense
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\deploy.sh  (74 lignes)
+------------------------------------------------------
+#!/bin/bash
+set -e
+
+echo "=== CIA Infrastructure Deploy ==="
+
+# Récupérer la clé SSH depuis Doppler
+doppler secrets get SSH_PRIVATE_KEY --plain > /tmp/cia_infra
+chmod 600 /tmp/cia_infra
+
+# Export vars pour Ansible
+export NETBOX_SECRET_KEY=$(doppler secrets get NETBOX_SECRET_KEY --plain)
+export NETBOX_DB_PASSWORD=$(doppler secrets get NETBOX_DB_PASSWORD --plain)
+export NETBOX_ADMIN_USER=$(doppler secrets get NETBOX_ADMIN_USER --plain)
+export NETBOX_ADMIN_PASSWORD=$(doppler secrets get NETBOX_ADMIN_PASSWORD --plain)
+export ELASTIC_PASSWORD=$(doppler secrets get ELASTIC_PASSWORD --plain)
+export KIBANA_PASSWORD=$(doppler secrets get KIBANA_PASSWORD --plain)
+export OPENVPN_CA_PASS=$(doppler secrets get OPENVPN_CA_PASS --plain)
+
+case "$1" in
+  init)
+    echo "--- Terraform init ---"
+    cd terraform/
+    doppler run --command='terraform init'
+    ;;
+  infra)
+    echo "--- Terraform apply ---"
+    cd terraform/
+    doppler run --command='terraform apply -auto-approve \
+      -var="proxmox_api_url=$PROXMOX_API_URL" \
+      -var="proxmox_token_id=$PROXMOX_TOKEN_ID" \
+      -var="proxmox_token_secret=$PROXMOX_TOKEN_SECRET" \
+      -var="ssh_public_key=$SSH_PUBLIC_KEY" \
+      -var="vm_password=$VM_PASSWORD" \
+      -var="template_id=$TEMPLATE_ID"'
+    cd ..
+    echo "--- Cleaning SSH known_hosts ---"
+    ssh-keygen -R 10.1.0.10 2>/dev/null || true  # netbox
+    ssh-keygen -R 10.1.0.20 2>/dev/null || true  # elasticsearch
+    ssh-keygen -R 10.2.0.5  2>/dev/null || true  # bastion
+    ssh-keygen -R 10.2.0.10 2>/dev/null || true  # webserver
+    ;;
+  destroy)
+    echo "--- Terraform destroy ---"
+    cd terraform/
+    doppler run --command='terraform destroy -auto-approve \
+      -var="proxmox_api_url=$PROXMOX_API_URL" \
+      -var="proxmox_token_id=$PROXMOX_TOKEN_ID" \
+      -var="proxmox_token_secret=$PROXMOX_TOKEN_SECRET" \
+      -var="ssh_public_key=$SSH_PUBLIC_KEY" \
+      -var="vm_password=$VM_PASSWORD" \
+      -var="template_id=$TEMPLATE_ID"'
+    ;;
+  config)
+    echo "--- Ansible playbooks ---"
+    cd ansible/
+    ansible-galaxy collection install -r requirements.yml -p ./collections
+    ansible-playbook -i inventory/hosts.yml site.yml
+    ;;
+  all)
+    $0 infra && sleep 90 && $0 config
+    ;;
+  ssh-key)
+    echo "--- Exporting SSH key to /tmp/cia_infra ---"
+    # Garde la clé disponible pour les commandes ansible manuelles
+    trap '' EXIT
+    ;;
+  *)
+    echo "Usage: ./deploy.sh [init|infra|destroy|config|all|ssh-key]"
+    ;;
+esac
+
+# Cleanup
+rm -f /tmp/cia_infra
+echo "=== Done ==="
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\readme.md  (50 lignes)
+------------------------------------------------------
+# T-NSA_810
+
+## Prerequisites
+
+- install terraform
+
+```bash
+brew tap hashicorp/tap
+```
+
+```bash
+brew install hashicorp/tap/terraform
+```
+
+- install doppler
+
+```bash
+doppler setup
+```
+
+- configure template ubuntu 
+```bash
+ # Télécharger l'image Ubuntu 24.04 cloud
+wget -P /var/lib/vz/template/iso/ \
+  https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+
+# Créer la VM template (ID 9000)
+qm create 9000 --name "ubuntu-2404-template" --memory 2048 --cores 2 \
+  --net0 virtio,bridge=vmbr0 --ostype l26
+
+# Importer le disque
+qm importdisk 9000 /var/lib/vz/template/iso/noble-server-cloudimg-amd64.img local-lvm
+
+# Attacher le disque et configurer cloud-init
+qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
+qm set 9000 --ide2 local-lvm:cloudinit
+qm set 9000 --boot c --bootdisk scsi0
+qm set 9000 --serial0 socket --vga serial0
+qm set 9000 --agent enabled=1
+
+# Convertir en template
+qm template 9000
+```
+
+- Supprimer cache terraform
+
+```bash
+cd terraform/
+terraform state list | xargs -I{} terraform state rm {}
+```
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\terraform\main.tf  (101 lignes)
+------------------------------------------------------
+# ── SITE 1 ─────────────────────────────────────────
+
+module "pfsense_s1" {
+  source      = "./modules/vm-pfsense"
+  vm_id       = 400
+  vm_name     = "cia-pf-s1"
+  target_node = var.target_node
+  cores       = 2
+  memory      = 2048
+  networks = [
+    { bridge = "vmbr0" },   # WAN
+    { bridge = "vmbr1" },   # LAN S1 10.1.0.0/24
+  ]
+}
+
+module "netbox" {
+  source      = "./modules/vm-linux"
+  vm_id       = 401
+  vm_name     = "cia-netbox"
+  target_node = var.target_node
+  clone       = var.template_id
+  storage     = var.storage
+  cores       = 2
+  memory      = 4096
+  disk_size   = 40
+  bridge      = "vmbr1"
+  ip_address  = "10.1.0.10/24"
+  gateway     = "10.1.0.254"
+  ssh_key     = var.ssh_public_key
+  vm_user     = var.vm_user
+  vm_password = var.vm_password
+}
+
+module "elasticsearch" {
+  source      = "./modules/vm-linux"
+  vm_id       = 402
+  vm_name     = "cia-elastic"
+  target_node = var.target_node
+  clone       = var.template_id
+  storage     = var.storage
+  cores       = 4
+  memory      = 8192
+  disk_size   = 80
+  bridge      = "vmbr1"
+  ip_address  = "10.1.0.20/24"
+  gateway     = "10.1.0.254"
+  ssh_key     = var.ssh_public_key
+  vm_user     = var.vm_user
+  vm_password = var.vm_password
+}
+
+# ── SITE 2 ─────────────────────────────────────────
+
+module "pfsense_s2" {
+  source      = "./modules/vm-pfsense"
+  vm_id       = 403
+  vm_name     = "cia-pf-s2"
+  target_node = var.target_node
+  cores       = 2
+  memory      = 2048
+  networks = [
+    { bridge = "vmbr0" },   # WAN
+    { bridge = "vmbr2" },   # LAN S2 10.2.0.0/24
+  ]
+}
+
+module "bastion" {
+  source      = "./modules/vm-linux"
+  vm_id       = 404
+  vm_name     = "cia-bastion"
+  target_node = var.target_node
+  clone       = var.template_id
+  storage     = var.storage
+  cores       = 1
+  memory      = 1024
+  disk_size   = 20
+  bridge      = "vmbr2"
+  ip_address  = "10.2.0.5/24"
+  gateway     = "10.2.0.254"
+  ssh_key     = var.ssh_public_key
+  vm_user     = var.vm_user
+  vm_password = var.vm_password
+}
+
+module "webserver" {
+  source      = "./modules/vm-linux"
+  vm_id       = 405
+  vm_name     = "cia-web"
+  target_node = var.target_node
+  clone       = var.template_id
+  storage     = var.storage
+  cores       = 2
+  memory      = 2048
+  disk_size   = 30
+  bridge      = "vmbr2"
+  ip_address  = "10.2.0.30/24"
+  gateway     = "10.2.0.254"
+  ssh_key     = var.ssh_public_key
+  vm_user     = var.vm_user
+  vm_password = var.vm_password
+}
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\terraform\modules\vm-linux\main.tf  (85 lignes)
+------------------------------------------------------
+terraform {
+  required_providers {
+    proxmox = {
+      source = "bpg/proxmox"
+    }
+  }
+}
+
+variable "vm_id"       {}
+variable "vm_name"     {}
+variable "target_node" {}
+variable "clone"       { type = number }
+variable "storage"     {}
+variable "cores"       {}
+variable "memory"      {}
+variable "disk_size"   { type = number }
+variable "bridge"      {}
+variable "ip_address"  {}
+variable "gateway"     {}
+variable "ssh_key"     {}
+variable "vm_user"     {}
+variable "vm_password" { sensitive = true }
+
+resource "proxmox_virtual_environment_vm" "vm" {
+  vm_id     = var.vm_id
+  name      = var.vm_name
+  node_name = var.target_node
+
+  clone {
+    vm_id = var.clone
+    full  = true
+  }
+
+  agent {
+    enabled = false
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
+  cpu {
+    cores = var.cores
+    type  = "host"
+  }
+
+  memory {
+    dedicated = var.memory
+  }
+
+  disk {
+    datastore_id = var.storage
+    interface    = "scsi0"
+    size         = var.disk_size
+    iothread     = true
+    file_format  = "raw"
+  }
+
+  scsi_hardware = "virtio-scsi-single"
+
+  network_device {
+    model  = "virtio"
+    bridge = var.bridge
+  }
+
+  initialization {
+    ip_config {
+      ipv4 {
+        address = var.ip_address
+        gateway = var.gateway
+      }
+    }
+    user_account {
+      username = var.vm_user
+      password = var.vm_password
+      keys     = [var.ssh_key]
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [network_device, disk]
+  }
+}
+
+output "vm_name" { value = proxmox_virtual_environment_vm.vm.name }
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\terraform\modules\vm-pfsense\main.tf  (60 lignes)
+------------------------------------------------------
+terraform {
+  required_providers {
+    proxmox = {
+      source = "bpg/proxmox"
+    }
+  }
+}
+
+variable "vm_id"       {}
+variable "vm_name"     {}
+variable "target_node" {}
+variable "memory"      {}
+variable "cores"       {}
+variable "networks" {
+  type = list(object({ bridge = string }))
+}
+
+resource "proxmox_virtual_environment_vm" "pfsense" {
+  vm_id         = var.vm_id
+  name          = var.vm_name
+  node_name     = var.target_node
+  scsi_hardware = "virtio-scsi-pci"
+  boot_order    = ["ide2", "scsi0"]
+
+  operating_system {
+    type = "other"
+  }
+
+  cpu {
+    cores = var.cores
+    type  = "host"
+  }
+
+  memory {
+    dedicated = var.memory
+  }
+
+  cdrom {
+    enabled   = true
+    file_id   = "local:iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
+    interface = "ide2"
+  }
+
+  disk {
+    datastore_id = "local-lvm"
+    interface    = "scsi0"
+    size         = 16
+    file_format  = "raw"
+  }
+
+  dynamic "network_device" {
+    for_each = var.networks
+    content {
+      model  = "virtio"
+      bridge = network_device.value.bridge
+    }
+  }
+}
+
+output "vm_name" { value = proxmox_virtual_environment_vm.pfsense.name }
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\terraform\outputs.tf  (6 lignes)
+------------------------------------------------------
+output "pfsense_s1_id"    { value = module.pfsense_s1.vm_name }
+output "netbox_ip"        { value = "10.1.0.10" }
+output "elasticsearch_ip" { value = "10.1.0.20" }
+output "pfsense_s2_id"    { value = module.pfsense_s2.vm_name }
+output "bastion_ip"       { value = "10.2.0.5"  }
+output "webserver_ip"     { value = "10.2.0.30" }
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\terraform\providers.tf  (15 lignes)
+------------------------------------------------------
+terraform {
+  required_version = ">= 1.7"
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "~> 0.73"
+    }
+  }
+}
+
+provider "proxmox" {
+  endpoint  = var.proxmox_api_url
+  api_token = "${var.proxmox_token_id}=${var.proxmox_token_secret}"
+  insecure  = true
+}
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\terraform\variables.tf  (15 lignes)
+------------------------------------------------------
+variable "proxmox_api_url"      { type = string }
+variable "proxmox_token_id"     { type = string }
+variable "proxmox_token_secret" {
+  type      = string
+  sensitive = true
+}
+variable "ssh_public_key"       { type = string }
+variable "vm_user"              { default = "cia" }
+variable "vm_password"          {
+  type      = string
+  sensitive = true
+}
+variable "target_node"          { default = "pve" }
+variable "storage"              { default = "local-lvm" }
+variable "template_id"          { type = number }
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\TODO.md  (72 lignes)
+------------------------------------------------------
+# TODO — Points temporaires à automatiser (GitOps)
+
+## Infrastructure réseau (Proxmox)
+
+- [ ] **Bridges vmbr1 / vmbr2** : créés manuellement sur le Proxmox enfant.
+  Automatiser via cloud-init ou un script de provisionning Proxmox au bootstrap.
+
+- [ ] **IP sur vmbr1/vmbr2** : `10.1.0.254/24` et `10.2.0.254/24` ajoutées manuellement.
+  À intégrer dans la config réseau Proxmox (Netplan/interfaces) via un rôle Ansible ou
+  un script de bootstrap.
+
+- [ ] **NAT / IP forwarding sur Proxmox** : `iptables MASQUERADE` et `ip_forward=1` appliqués
+  manuellement. À intégrer dans le bootstrap Proxmox (iptables-persistent + sysctl).
+  Gateway temporaire : Proxmox (10.x.x.254) au lieu de pfSense (10.x.x.1).
+
+- [ ] **Nested virtualization** : activée manuellement sur le Proxmox parent via
+  `qm set <VMID> --cpu host`. À documenter comme prérequis ou automatiser via
+  l'API Proxmox parent.
+
+## Template Ubuntu
+
+- [ ] **qemu-guest-agent absent du template** : installé via Ansible au runtime.
+  Idéalement à intégrer dans le template via Packer pour éviter le `ignore_errors`
+  dans le rôle common.
+
+- [ ] **Agent Terraform désactivé** (`agent { enabled = false }`) : temporaire pour
+  éviter le timeout de création. À repasser à `true` une fois qemu-guest-agent
+  présent dans le template.
+
+## Secrets Doppler
+
+- [x] **Secrets Ansible configurés** : `NETBOX_SECRET_KEY`, `NETBOX_DB_PASSWORD`,
+  `NETBOX_ADMIN_USER`, `NETBOX_ADMIN_PASSWORD`, `ELASTIC_PASSWORD`,
+  `KIBANA_PASSWORD`, `OPENVPN_CA_PASS` tous définis dans Doppler.
+
+## Services déployés
+
+- [x] **NetBox** : opérationnel sur `http://10.1.0.10` (proxy nginx → gunicorn:8001).
+  Migrations, collectstatic et superuser créés automatiquement via Ansible.
+
+- [x] **Elasticsearch** : opérationnel sur `http://10.1.0.20:9200`.
+  Sécurité xpack activée (sans SSL transport), mots de passe définis via Doppler.
+
+- [x] **Kibana** : opérationnel sur `http://10.1.0.20:5601`.
+  Connecté à Elasticsearch avec le compte `kibana_system`.
+
+- [ ] **SSH known_hosts** : nettoyage automatique après `./deploy.sh infra` ajouté,
+  mais à terme remplacer par un mécanisme de découverte dynamique des host keys
+  (ex. enregistrement dans Vault/Doppler au provisioning).
+
+## pfSense
+
+- [ ] **pfSense non configuré** : les deux VMs pfsense_s1 et pfsense_s2 sont créées
+  mais l'installation et la configuration (WAN/LAN, NAT, VPN) sont manuelles.
+  À automatiser via l'API pfSense ou des scripts de bootstrap.
+  Une fois configuré, repasser les gateways Terraform sur `10.1.0.1` / `10.2.0.1`.
+
+## Accès aux services
+
+- [ ] **Tunnels SSH manuels** : accès via `./tunnel.sh` (SSH -L vers Proxmox).
+  À remplacer par un VPN (OpenVPN sur le bastion) pour un accès réseau direct
+  et permanent au réseau interne.
+
+## OpenVPN
+
+- [x] **Port forwarding Proxmox** : automatisé via le rôle `proxmox-bootstrap`.
+  DNAT UDP 1194 → bastion (10.2.0.5:1194), NAT masquerade pour site1/site2,
+  ip_forward activé, règles persistées via iptables-persistent.
+
+- [ ] **CA passphrase** : la CA OpenVPN est générée sans passphrase pour l'automatisation.
+  Pour un environnement de production, utiliser `openvpn_ca_pass` (déjà dans Doppler)
+  et gérer la passphrase dans Ansible Vault ou Doppler.
+
+------------------------------------------------------
+FILE: :\Users\Utilisateur\Documents\T-NSA-810-BDX_1\tunnel.sh  (24 lignes)
+------------------------------------------------------
+#!/bin/bash
+# Ouvre des tunnels SSH vers tous les services CIA via le Proxmox
+# Usage: ./tunnel.sh
+
+PROXMOX="root@192.168.1.37"
+
+echo "=== CIA Infrastructure Tunnels ==="
+echo ""
+echo "Les services seront accessibles sur :"
+echo "  NetBox        -> http://localhost:8080"
+echo "  Kibana        -> http://localhost:5601"
+echo "  Elasticsearch -> http://localhost:9200"
+echo ""
+echo "Ctrl+C pour fermer tous les tunnels"
+echo ""
+
+ssh \
+  -L 8080:10.1.0.10:80 \
+  -L 5601:10.1.0.20:5601 \
+  -L 9200:10.1.0.20:9200 \
+  -N \
+  -o StrictHostKeyChecking=no \
+  -o ServerAliveInterval=30 \
+  "$PROXMOX"
+
+=== FIN DU DUMP ===
