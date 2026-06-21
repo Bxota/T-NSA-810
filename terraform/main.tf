@@ -4,8 +4,6 @@
 # ═══════════════════════════════════════════════════════════════
 
 # ── BRIDGES ─────────────────────────────────────────────────────
-# proxmox_network_linux_bridge = nouveau nom (v0.73+)
-# vmbr0 existe déjà (bridge VMware NAT, créé à l'install Proxmox)
 
 resource "proxmox_network_linux_bridge" "vmbr1" {
   node_name = var.TARGET_NODE
@@ -31,9 +29,6 @@ resource "proxmox_download_file" "ubuntu_cloud_image" {
   overwrite    = false
 }
 
-# Note : si le téléchargement pfSense échoue (restriction Netgate),
-# uploader l'ISO manuellement dans Proxmox → local → ISO Images
-# et remplacer iso_file_id par "local:iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
 resource "proxmox_download_file" "pfsense_iso" {
   node_name               = var.TARGET_NODE
   content_type            = "iso"
