@@ -6,6 +6,7 @@ netbox_admin_password:  "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
 netbox_terraform_token: "{{ lookup('env', 'NETBOX_API_TOKEN') }}"
 elastic_password:       "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
 kibana_password:        "{{ lookup('env', 'KIBANA_PASSWORD') }}"
+kibana_encryption_key:  "{{ lookup('env', 'KIBANA_ENCRYPTION_KEY') }}"
 
 # ── Réseau ────────────────────────────────────────────────────────────────────
 domain_s1: "s1.local"

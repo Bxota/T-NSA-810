@@ -145,3 +145,19 @@
   register: kibana_import
   changed_when: '"\"successCount\"" in kibana_import.stdout'
   failed_when: '"\"success\":true" not in kibana_import.stdout'
+
+# ── Alerting Kibana (IaC) ─────────────────────────────────────────────────────
+- name: Déployer le script de provisioning des alertes
+  copy:
+    src: setup_alerts.py
+    dest: /opt/setup_alerts.py
+    mode: "0755"
+
+- name: Provisionner les règles d'alerte Kibana (brute-force SSH, pic d'erreurs)
+  ansible.builtin.command: /usr/bin/python3 /opt/setup_alerts.py
+  environment:
+    KIBANA_URL: "http://localhost:5601"
+    ELASTIC_USER: "elastic"
+    ELASTIC_PASSWORD: "{{ elastic_password }}"
+  register: alerts_setup
+  changed_when: "'règle créée' in alerts_setup.stdout"

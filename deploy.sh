@@ -16,6 +16,7 @@ load_secrets() {
   export NETBOX_API_TOKEN=$(doppler secrets get NETBOX_API_TOKEN --plain)
   export ELASTIC_PASSWORD=$(doppler secrets get ELASTIC_PASSWORD --plain)
   export KIBANA_PASSWORD=$(doppler secrets get KIBANA_PASSWORD --plain)
+  export KIBANA_ENCRYPTION_KEY=$(doppler secrets get KIBANA_ENCRYPTION_KEY --plain)
 
   # IPs des deux Proxmox (pour SSH bootstrap + inventaire Ansible)
   export PROXMOX_S1_IP=$(doppler secrets get PROXMOX_S1_IP --plain)

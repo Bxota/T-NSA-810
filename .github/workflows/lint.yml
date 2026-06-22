@@ -62,6 +62,30 @@ jobs:
         working-directory: ansible
         run: ansible-lint -c ../.ansible-lint
 
+  # ── Tests automatisés : validation de syntaxe des playbooks ─────────────────
+  tests:
+    name: Tests (syntax-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer Ansible
+        run: pip install ansible
+
+      - name: Installer les collections Ansible requises
+        run: ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Playbook syntax-check
+        working-directory: ansible
+        env:
+          # Valeurs factices : le syntax-check parse les templates sans déployer.
+          OPENVPN_SERVER_IP: "127.0.0.1"
+        run: ansible-playbook -i inventory/hosts.yml site.yml --syntax-check
+
   # ── Shell : shellcheck sur tous les scripts .sh ─────────────────────────────
   shellcheck:
     name: ShellCheck

@@ -10,3 +10,6 @@ logging.appenders.file.type: file
 logging.appenders.file.fileName: /var/log/kibana/kibana.log
 logging.appenders.file.layout.type: json
 logging.root.appenders: [default, file]
+
+# Requis pour l'alerting / les connectors (chiffrement des saved objects).
+xpack.encryptedSavedObjects.encryptionKey: "{{ kibana_encryption_key }}"

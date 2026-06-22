@@ -208,7 +208,7 @@ Qualité du code (lint) :
 |-----|---------|
 | [docs/etat-final.md](docs/etat-final.md) | Couverture des exigences + validation fonctionnelle |
 | [docs/DRP.md](docs/DRP.md) | Plan de reprise d'activité |
-| [docs/runbooks/](docs/runbooks/) | Rebuild complet, restauration pfSense, kill switch |
+| [docs/runbooks/](docs/runbooks/) | Rebuild complet, restauration pfSense, kill switch, ajout d'un site |
 | [docs/ecarts-justification.md](docs/ecarts-justification.md) | Justification des choix (pfSense, Doppler) |
 
 ## Supprimer le state Terraform

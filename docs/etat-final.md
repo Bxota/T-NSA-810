@@ -26,11 +26,21 @@ la preuve correspondante dans le dépôt._
 
 ## Bonus
 
-| Bonus | État | Preuve |
+| Bonus (sujet) | État | Preuve / détail |
 |---|---|---|
-| CI/CD — lint IaC | ✅ | `.github/workflows/lint.yml` (terraform, ansible, shell, python) |
-| Multi-site (scalabilité) | ✅ | Convention d'adressage par site (10.X.0.0/24), rôles paramétrés par `router_role` ; ajout d'un site = nouveau bloc Terraform + entrées inventaire |
-| Monitoring avancé (dashboards) | ✅ | Dashboard Kibana provisionné automatiquement |
+| CI/CD — IaC linting | ✅ | `.github/workflows/lint.yml` : terraform fmt/validate, ansible-lint, yamllint, shellcheck, ruff |
+| CI/CD — Automated tests | ✅ | Job `tests` : `ansible-playbook --syntax-check` |
+| CI/CD — Automated deployments | ❌ | `deploy.sh` reste déclenché manuellement (pas de CD) |
+| Golden Paths — VMs | ✅ | Modules Terraform réutilisables `vm-linux`, `vm-pfsense` |
+| Golden Paths — Firewall / IPAM / Logging | ⚠️ | Templatés (config.xml.j2, netbox-ipam, rôle filebeat) mais non packagés en bibliothèque dédiée |
+| Advanced Monitoring — Dashboards | ✅ | Dashboard Kibana « CIA — Observabilité » provisionné en IaC |
+| Advanced Monitoring — Alerting | ✅ | 2 règles `.es-query` (brute-force SSH, pic d'erreurs) + connector, en IaC (`setup_alerts.py`) |
+| Advanced Monitoring — Log parsing | ❌ | Logs expédiés bruts ; parsing via modules Filebeat tenté mais non concluant sur cet environnement |
+| Multi-Site — Addressing conventions | ✅ | `10.N.0.0/24` par site (`locals.tf`), rôles paramétrés par `router_role` |
+| Multi-Site — Third-site onboarding | ✅ | Runbook [add-site.md](runbooks/add-site.md) |
+
+**Bilan bonus : ~7/10 items.** Manquent : déploiement continu automatisé, log parsing
+structuré, packaging formel des golden paths.
 
 ## Validation fonctionnelle (dernière vérification)
 
@@ -40,6 +50,7 @@ la preuve correspondante dans le dépôt._
 | Routage LAN distant (webserver S2 → ES S1, HTTP) | HTTP 200 |
 | Filebeat — logs des 4 VMs applicatives dans ES | netbox, elastic, web, bastion présents |
 | Dashboard Kibana | importé (7 objets), data view résolu |
+| Alerting Kibana | 2 règles actives ; « Brute-force SSH » passée en `active` au franchissement du seuil |
 | IPAM auto-sync | 6 VMs synchronisées, timer `active`, run systemd `status=0` |
 
 ## Écarts assumés
