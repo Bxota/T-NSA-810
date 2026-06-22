@@ -11,8 +11,8 @@ terraform {
 # pfSense ne supporte PAS cloud-init : aucune initialisation ici, l'IP LAN et toute
 # la configuration sont appliquées via le config.xml (rôle Ansible `pfsense`).
 
-variable "vm_id"       {}
-variable "vm_name"     {}
+variable "vm_id" {}
+variable "vm_name" {}
 variable "target_node" {}
 variable "clone" {
   type = number

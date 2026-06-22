@@ -1,0 +1,91 @@
+---
+name: Lint IaC
+
+# Vérifie la qualité de l'Infrastructure as Code à chaque push / PR :
+# Terraform (fmt + validate), Ansible (ansible-lint + yamllint),
+# scripts shell (shellcheck) et Python (ruff).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Terraform : format + validation syntaxique des modules ──────────────────
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.5"
+
+      - name: terraform fmt
+        run: terraform -chdir=terraform fmt -check -recursive
+
+      - name: terraform validate (racine)
+        run: |
+          terraform -chdir=terraform init -backend=false
+          terraform -chdir=terraform validate
+
+      - name: terraform validate (netbox-ipam)
+        run: |
+          terraform -chdir=terraform/netbox-ipam init -backend=false
+          terraform -chdir=terraform/netbox-ipam validate
+
+  # ── Ansible : ansible-lint + yamllint ───────────────────────────────────────
+  ansible:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les linters
+        run: pip install ansible-lint yamllint
+
+      - name: Installer les collections Ansible requises
+        run: ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: yamllint
+        run: yamllint -c .yamllint ansible/
+
+      - name: ansible-lint
+        working-directory: ansible
+        run: ansible-lint -c ../.ansible-lint
+
+  # ── Shell : shellcheck sur tous les scripts .sh ─────────────────────────────
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          shellcheck deploy.sh tunnel.sh scripts/*.sh
+
+  # ── Python : ruff (lint des scripts d'automatisation) ───────────────────────
+  python:
+    name: Python ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: ruff
+        run: |
+          pip install ruff
+          ruff check ansible/roles/*/files/*.py

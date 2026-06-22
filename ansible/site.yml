@@ -22,7 +22,7 @@
 - name: Deploy NetBox
   hosts: netbox
   become: true
-  roles: [netbox, filebeat]
+  roles: [netbox, netbox_sync, filebeat]
 
 - name: Deploy Elasticsearch + Kibana
   hosts: elasticsearch

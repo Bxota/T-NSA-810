@@ -32,6 +32,16 @@ load_secrets() {
 
   # Mot de passe SSH admin pfSense (auth par mot de passe, pas de clé)
   export PFSENSE_ADMIN_PASSWORD=$(doppler secrets get PFSENSE_ADMIN_PASSWORD --plain 2>/dev/null || echo "")
+
+  # API Proxmox (consommée par le sync NetBox auto-update, rôle netbox_sync)
+  export PROXMOX_S1_API_URL=$(doppler secrets get PROXMOX_S1_API_URL --plain)
+  export PROXMOX_S2_API_URL=$(doppler secrets get PROXMOX_S2_API_URL --plain)
+  export PROXMOX_S1_NODE=$(doppler secrets get PROXMOX_S1_NODE --plain)
+  export PROXMOX_S2_NODE=$(doppler secrets get PROXMOX_S2_NODE --plain)
+  export PROXMOX_S1_TOKEN_ID=$(doppler secrets get PROXMOX_S1_TOKEN_ID --plain)
+  export PROXMOX_S1_TOKEN_SECRET=$(doppler secrets get PROXMOX_S1_TOKEN_SECRET --plain)
+  export PROXMOX_S2_TOKEN_ID=$(doppler secrets get PROXMOX_S2_TOKEN_ID --plain)
+  export PROXMOX_S2_TOKEN_SECRET=$(doppler secrets get PROXMOX_S2_TOKEN_SECRET --plain)
 }
 
 # ── Variables Terraform ───────────────────────────────────────────────────────

@@ -1,0 +1,21 @@
+---
+# Configuration ansible-lint.
+profile: basic
+
+exclude_paths:
+  - ansible/collections/
+  - .github/
+
+skip_list:
+  - yaml[line-length]      # géré par yamllint
+  - yaml[colons]           # alignement vertical volontaire (clé:   valeur)
+  - yaml[commas]           # alignement vertical volontaire (a,   b)
+  - yaml[truthy]           # yes/no toléré (style Ansible historique)
+  - name[casing]           # noms de handlers en minuscule acceptés
+  - var-naming[no-role-prefix]  # variables partagées entre rôles (group_vars)
+  - fqcn[action-core]      # modules courts (apt, copy…) acceptés
+  - command-instead-of-module  # curl (upload multipart Kibana) / systemctl volontaires
+  - partial-become         # become défini au niveau du play (site.yml)
+
+warn_list:
+  - experimental

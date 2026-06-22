@@ -55,7 +55,9 @@ brew install dopplerhq/cli/doppler
 doppler setup  # configurer avec le token du projet
 ```
 
-Variables requises dans Doppler : `PROXMOX_S1_IP`, `PROXMOX_S2_IP`, `PROXMOX_ROOT_PASSWORD`, `SSH_PRIVATE_KEY`, `SSH_PUBLIC_KEY`, `NETBOX_SECRET_KEY`, `NETBOX_DB_PASSWORD`, `ELASTIC_PASSWORD`, `NETBOX_API_TOKEN`, `OPENVPN_SERVER_IP`, `PFSENSE_ADMIN_BCRYPT` (hash bcrypt du mot de passe admin pfSense), `PFSENSE_TEMPLATE_ID` (optionnel, défaut 9100).
+Variables requises dans Doppler : `PROXMOX_S1_IP`, `PROXMOX_S2_IP`, `PROXMOX_ROOT_PASSWORD`, `SSH_PRIVATE_KEY`, `SSH_PUBLIC_KEY`, `NETBOX_SECRET_KEY`, `NETBOX_DB_PASSWORD`, `ELASTIC_PASSWORD`, `NETBOX_API_TOKEN`, `OPENVPN_SERVER_IP`, `PFSENSE_ADMIN_BCRYPT` (hash bcrypt du mot de passe admin pfSense), `PFSENSE_ADMIN_PASSWORD`, `PFSENSE_TEMPLATE_ID` (optionnel, défaut 9100).
+
+Pour la synchro IPAM auto (rôle `netbox_sync`), Doppler doit aussi fournir l'API Proxmox des deux nœuds : `PROXMOX_S1_API_URL`, `PROXMOX_S2_API_URL`, `PROXMOX_S1_NODE`, `PROXMOX_S2_NODE`, `PROXMOX_S1_TOKEN_ID`, `PROXMOX_S1_TOKEN_SECRET`, `PROXMOX_S2_TOKEN_ID`, `PROXMOX_S2_TOKEN_SECRET`.
 
 ## Déploiement
 
@@ -121,6 +123,44 @@ Le tunnel inter-sites est désormais géré en site-à-site par les deux pfSense
 DNS interne résout les noms `*.s1.local` / `*.s2.local` de part et d'autre via le forwarding
 Unbound configuré sur les pfSense.
 
+## Observabilité
+
+Les **6 VMs** embarquent Filebeat (rôle `filebeat`) et expédient leurs logs vers
+Elasticsearch (`10.1.0.20:9200`) — y compris les VMs du Site 2, dont le trafic transite par
+le tunnel VPN. Kibana est provisionné en IaC avec un dashboard prêt à l'emploi :
+
+| Dashboard | Contenu |
+|-----------|---------|
+| **CIA — Observabilité Infrastructure** | Total logs, volume temporel, répartition par hôte, débit par hôte, top fichiers sources |
+
+Le dashboard (data view + visualisations) est versionné dans
+[ansible/roles/elasticsearch/files/kibana-dashboard.ndjson](ansible/roles/elasticsearch/files/kibana-dashboard.ndjson)
+et importé automatiquement via l'API `saved_objects` (régénérable avec `gen_dashboard.py`).
+
+## IPAM synchronisé automatiquement
+
+NetBox n'est plus seulement peuplé statiquement : le rôle `netbox_sync` installe un **timer
+systemd** (toutes les 15 min) sur la VM NetBox qui interroge l'API Proxmox des deux nœuds et
+réconcilie l'inventaire réel (VMs, état, vCPU/RAM/disque, IP primaire) dans NetBox. Les objets
+créés sont tagués `proxmox-sync` ; les VMs disparues de Proxmox sont automatiquement purgées.
+
+```bash
+# Sur la VM NetBox : forcer une synchro immédiate
+sudo systemctl start proxmox-netbox-sync.service
+systemctl list-timers proxmox-netbox-sync.timer
+```
+
+## CI — Lint Infrastructure as Code
+
+À chaque push / PR, [.github/workflows/lint.yml](.github/workflows/lint.yml) vérifie :
+
+| Job | Outil |
+|-----|-------|
+| Terraform | `terraform fmt` + `validate` (racine + netbox-ipam) |
+| Ansible | `ansible-lint` + `yamllint` |
+| Shell | `shellcheck` (deploy.sh, tunnel.sh, scripts) |
+| Python | `ruff` (scripts d'automatisation) |
+
 ## Structure du projet
 
 ```
@@ -148,16 +188,25 @@ Unbound configuré sur les pfSense.
         ├── common/         # Base OS (packages, SSH, NTP, UFW)
         ├── pfsense/        # Firewall/VPN/DNS pfSense (config.xml + kill switch)
         ├── netbox/         # NetBox IPAM
-        ├── elasticsearch/  # ELK stack
-        ├── filebeat/       # Agent de logs
+        ├── netbox_sync/    # Sync auto Proxmox → NetBox (timer systemd)
+        ├── elasticsearch/  # ELK stack + dashboards Kibana (IaC)
+        ├── filebeat/       # Agent de logs (sur les 6 VMs)
         ├── bastion/        # Jump host + 2FA
         └── webserver/      # Serveur applicatif
+```
+
+Qualité du code (lint) :
+
+```
+.github/workflows/lint.yml   # CI : terraform / ansible / shell / python
+.yamllint .ansible-lint .shellcheckrc
 ```
 
 ## Documentation
 
 | Doc | Contenu |
 |-----|---------|
+| [docs/etat-final.md](docs/etat-final.md) | Couverture des exigences + validation fonctionnelle |
 | [docs/DRP.md](docs/DRP.md) | Plan de reprise d'activité |
 | [docs/runbooks/](docs/runbooks/) | Rebuild complet, restauration pfSense, kill switch |
 | [docs/ecarts-justification.md](docs/ecarts-justification.md) | Justification des choix (pfSense, Doppler) |

@@ -1,0 +1,7 @@
+# Configuration ShellCheck.
+# SC2155 : `export X=$(cmd)` — masque le code retour. Accepté ici : les secrets
+#          Doppler sont non-vides par construction (échec visible au déploiement).
+# SC2086  : word-splitting volontaire (arguments SSH/curl assemblés dynamiquement).
+# SC2029 : expansion côté client volontaire (l'IP locale est injectée dans la
+#          commande SSH distante — comportement recherché).
+disable=SC2155,SC2086,SC2029

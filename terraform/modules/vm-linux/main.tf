@@ -6,19 +6,19 @@ terraform {
   }
 }
 
-variable "vm_id"       {}
-variable "vm_name"     {}
+variable "vm_id" {}
+variable "vm_name" {}
 variable "target_node" {}
-variable "clone"       { type = number }
-variable "storage"     {}
-variable "cores"       {}
-variable "memory"      {}
-variable "disk_size"   { type = number }
-variable "bridge"      {}
-variable "ip_address"  {}
-variable "gateway"     {}
-variable "ssh_key"     {}
-variable "vm_user"     {}
+variable "clone" { type = number }
+variable "storage" {}
+variable "cores" {}
+variable "memory" {}
+variable "disk_size" { type = number }
+variable "bridge" {}
+variable "ip_address" {}
+variable "gateway" {}
+variable "ssh_key" {}
+variable "vm_user" {}
 variable "vm_password" { sensitive = true }
 
 resource "proxmox_virtual_environment_vm" "vm" {
