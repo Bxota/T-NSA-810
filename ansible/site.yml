@@ -1,28 +1,39 @@
 ---
-- name: Bootstrap Proxmox (NAT + port forwarding)
-  hosts: proxmox
-  become: true
-  roles: [proxmox-bootstrap]
+# ── 1. pfSense Site 1 (serveur VPN) — génère la PKI, fournit la gateway S1 ─────
+# pfSense n'a pas python avant que le rôle ne l'installe (via raw) → gather_facts off.
+- name: Setup pfSense Site 1 (firewall + VPN server)
+  hosts: pfsense_s1
+  gather_facts: false
+  roles: [pfsense]
 
-- name: Common setup all VMs
-  hosts: all:!proxmox
+# ── 1bis. pfSense Site 2 (client VPN) — consomme la PKI exposée par S1 ─────────
+- name: Setup pfSense Site 2 (firewall + VPN client)
+  hosts: pfsense_s2
+  gather_facts: false
+  roles: [pfsense]
+
+# ── 2. Setup commun sur toutes les VMs applicatives ───────────────────────────
+- name: Common setup all app VMs
+  hosts: all:!proxmox_s1:!proxmox_s2:!pfsense_s1:!pfsense_s2
   become: true
   roles: [common]
 
+# ── 3. Services Site 1 ────────────────────────────────────────────────────────
 - name: Deploy NetBox
   hosts: netbox
   become: true
-  roles: [netbox]
+  roles: [netbox, filebeat]
 
 - name: Deploy Elasticsearch + Kibana
   hosts: elasticsearch
   become: true
   roles: [elasticsearch, filebeat]
 
+# ── 4. Services Site 2 ────────────────────────────────────────────────────────
 - name: Deploy Bastion
   hosts: bastion
   become: true
-  roles: [bastion, openvpn, filebeat]
+  roles: [bastion, filebeat]
 
 - name: Deploy Webserver
   hosts: webserver

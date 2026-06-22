@@ -1,0 +1,38 @@
+#!/bin/sh
+# pki-bootstrap.sh — génère la PKI OpenVPN du tunnel site-à-site CIA.
+# Exécuté UNE fois sur pfsense_s1 (openssl + openvpn fournis par la base FreeBSD/pfSense).
+# Idempotent : ne régénère rien si /root/cia-pki/ta.key existe déjà.
+set -e
+
+PKI=/root/cia-pki
+DAYS=3650
+mkdir -p "$PKI"
+cd "$PKI"
+
+[ -f ta.key ] && { echo "PKI déjà présente, rien à faire."; exit 0; }
+
+# ── Autorité de certification ────────────────────────────────────────────────
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -nodes -key ca.key -sha256 -days "$DAYS" \
+  -subj "/CN=CIA-VPN-CA" -out ca.crt
+
+# ── Certificat serveur (pfsense_s1) ──────────────────────────────────────────
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -subj "/CN=server" -out server.csr
+openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
+  -days "$DAYS" -sha256 -out server.crt
+
+# ── Certificat client (pfsense_s2) ───────────────────────────────────────────
+openssl genrsa -out client.key 2048
+openssl req -new -key client.key -subj "/CN=client" -out client.csr
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
+  -days "$DAYS" -sha256 -out client.crt
+
+# ── Paramètres Diffie-Hellman ────────────────────────────────────────────────
+openssl dhparam -out dh.pem 2048
+
+# ── Clé TLS auth (tls-auth) ──────────────────────────────────────────────────
+openvpn --genkey secret ta.key
+
+chmod 600 "$PKI"/*.key ta.key
+echo "PKI générée dans $PKI"

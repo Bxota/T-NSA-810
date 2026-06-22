@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<!--
+  config.xml pfSense — généré par Ansible (rôle pfsense).
+  Site : {{ inventory_hostname }} ({{ router_role }}) — domaine {{ pfsense_domain }}
+  NE PAS éditer à la main : régénéré par `deploy.sh config`.
+-->
+<pfsense>
+  <version>22.5</version>
+  <lastchange></lastchange>
+
+  <!-- ── Système ────────────────────────────────────────────────────────── -->
+  <system>
+    <optimization>normal</optimization>
+    <hostname>{{ inventory_hostname }}</hostname>
+    <domain>{{ pfsense_domain }}</domain>
+    <timezone>Europe/Paris</timezone>
+    <timeservers>pool.ntp.org</timeservers>
+    <webgui>
+      <protocol>https</protocol>
+      <port>443</port>
+    </webgui>
+    <ssh>
+      <enable>enabled</enable>
+    </ssh>
+    <user>
+      <name>admin</name>
+      <descr>System Administrator</descr>
+      <scope>system</scope>
+      <groupname>admins</groupname>
+      <bcrypt-hash>{{ pfsense_admin_bcrypt }}</bcrypt-hash>
+      <uid>0</uid>
+      <priv>user-shell-access</priv>
+    </user>
+    <group>
+      <name>admins</name>
+      <description>System Administrators</description>
+      <scope>system</scope>
+      <gid>1999</gid>
+      <member>0</member>
+      <priv>page-all</priv>
+    </group>
+    <dnsserver>127.0.0.1</dnsserver>
+  </system>
+
+  <!-- ── Interfaces ─────────────────────────────────────────────────────── -->
+  <interfaces>
+    <wan>
+      <enable></enable>
+      <if>{{ pfsense_wan_if }}</if>
+      <ipaddr>dhcp</ipaddr>
+      <descr>WAN</descr>
+    </wan>
+    <lan>
+      <enable></enable>
+      <if>vtnet1</if>
+      <ipaddr>{{ pfsense_lan_ip }}</ipaddr>
+      <subnet>24</subnet>
+      <descr>LAN</descr>
+    </lan>
+  </interfaces>
+
+  <!-- ── NAT sortant automatique (masquerade LAN → WAN) ─────────────────── -->
+  <nat>
+    <outbound>
+      <mode>automatic</mode>
+    </outbound>
+  </nat>
+
+  <!-- ── Firewall : DENY-BY-DEFAULT ─────────────────────────────────────────
+       Toute interface sans règle de passage bloque (comportement pfSense).
+       WAN n'a donc AUCUN flux entrant autorisé, sauf le port OpenVPN sur le
+       serveur (S1). Le site web interne (10.2.0.30:80) n'est jamais exposé sur
+       le WAN (pas de port-forward) → exigence « web interne uniquement ». -->
+  <filter>
+{% if router_role == "server" %}
+    <!-- WAN : autorise uniquement la connexion OpenVPN entrante du site distant -->
+    <rule>
+      <type>pass</type>
+      <interface>wan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <protocol>udp</protocol>
+      <source><any></any></source>
+      <destination>
+        <network>wanip</network>
+        <port>{{ vpn_port }}</port>
+      </destination>
+      <descr>Allow OpenVPN site-to-site</descr>
+    </rule>
+{% endif %}
+
+    <!-- LAN : autorise le trafic sortant du LAN local (vers WAN + tunnel) -->
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <protocol>any</protocol>
+      <source><network>lan</network></source>
+      <destination><any></any></destination>
+      <descr>Allow LAN to any (egress)</descr>
+    </rule>
+
+    <!-- OpenVPN : tout trafic inter-sites (LAN distant + subnet VPN 10.8.0.x) -->
+    <rule>
+      <type>pass</type>
+      <interface>openvpn</interface>
+      <ipprotocol>inet</ipprotocol>
+      <protocol>any</protocol>
+      <source><any></any></source>
+      <destination><any></any></destination>
+      <descr>Allow all traffic over VPN tunnel</descr>
+    </rule>
+{% if router_role == "client" %}
+    <!-- Web interne : 80 autorisé uniquement depuis LAN S1/S2 + VPN -->
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <protocol>tcp</protocol>
+      <source><network>{{ lan_s1 }}</network></source>
+      <destination>
+        <address>{{ web_ip }}</address>
+        <port>80</port>
+      </destination>
+      <descr>Allow internal web from Site 1</descr>
+    </rule>
+{% endif %}
+  </filter>
+
+  <!-- ── DNS Resolver (Unbound) : forwarding inter-sites ───────────────────
+       Chaque site est autoritaire pour son domaine local (host overrides) et
+       délègue le domaine distant au pfSense distant via le tunnel. -->
+  <unbound>
+    <enable></enable>
+    <active_interface>lan</active_interface>
+    <outgoing_interface></outgoing_interface>
+    <dnssec></dnssec>
+    <system_domain_local_zone_type>transparent</system_domain_local_zone_type>
+{% for r in dns_records if r.domain == pfsense_domain %}
+    <hosts>
+      <host>{{ r.host }}</host>
+      <domain>{{ r.domain }}</domain>
+      <ip>{{ r.ip }}</ip>
+      <descr>{{ r.host }}.{{ r.domain }}</descr>
+    </hosts>
+{% endfor %}
+    <domainoverrides>
+      <domain>{{ remote_domain }}</domain>
+      <ip>{{ remote_router_ip }}</ip>
+      <descr>Forward {{ remote_domain }} to remote site</descr>
+    </domainoverrides>
+  </unbound>
+
+  <!-- ── OpenVPN site-à-site ────────────────────────────────────────────── -->
+{% if router_role == "server" %}
+  <openvpn>
+    <openvpn-server>
+      <vpnid>1</vpnid>
+      <mode>p2p_tls</mode>
+      <protocol>UDP4</protocol>
+      <dev_mode>tun</dev_mode>
+      <interface>wan</interface>
+      <local_port>{{ vpn_port }}</local_port>
+      <description>CIA site-to-site (server)</description>
+      <tls>{{ pki_ta | b64encode }}</tls>
+      <tls_type>auth</tls_type>
+      <caref>ca_cia</caref>
+      <certref>cert_server</certref>
+      <dh_length>2048</dh_length>
+      <data_ciphers>AES-256-GCM</data_ciphers>
+      <data_ciphers_fallback>AES-256-GCM</data_ciphers_fallback>
+      <digest>SHA256</digest>
+      <tunnel_network>{{ vpn_subnet }}</tunnel_network>
+      <local_network>{{ lan_s1 }}</local_network>
+      <remote_network>{{ lan_s2 }}</remote_network>
+      <topology>subnet</topology>
+      <custom_options>keepalive 10 120;</custom_options>
+    </openvpn-server>
+  </openvpn>
+{% else %}
+  <openvpn>
+    <openvpn-client>
+      <vpnid>1</vpnid>
+      <mode>p2p_tls</mode>
+      <protocol>UDP4</protocol>
+      <dev_mode>tun</dev_mode>
+      <interface>wan</interface>
+      <server_addr>{{ openvpn_server_ip }}</server_addr>
+      <server_port>{{ vpn_port }}</server_port>
+      <description>CIA site-to-site (client)</description>
+      <tls>{{ pki_ta | b64encode }}</tls>
+      <tls_type>auth</tls_type>
+      <caref>ca_cia</caref>
+      <certref>cert_client</certref>
+      <data_ciphers>AES-256-GCM</data_ciphers>
+      <data_ciphers_fallback>AES-256-GCM</data_ciphers_fallback>
+      <digest>SHA256</digest>
+      <tunnel_network>{{ vpn_subnet }}</tunnel_network>
+      <remote_network>{{ lan_s1 }}</remote_network>
+      <topology>subnet</topology>
+      <custom_options>keepalive 10 120;</custom_options>
+    </openvpn-client>
+  </openvpn>
+{% endif %}
+
+  <!-- ── Certificats (PKI OpenVPN, base64) ──────────────────────────────── -->
+  <ca>
+    <refid>ca_cia</refid>
+    <descr>CIA-VPN-CA</descr>
+    <crt>{{ pki_ca | b64encode }}</crt>
+  </ca>
+{% if router_role == "server" %}
+  <cert>
+    <refid>cert_server</refid>
+    <descr>server</descr>
+    <caref>ca_cia</caref>
+    <crt>{{ pki_server_crt | b64encode }}</crt>
+    <prv>{{ pki_server_key | b64encode }}</prv>
+  </cert>
+{% else %}
+  <cert>
+    <refid>cert_client</refid>
+    <descr>client</descr>
+    <caref>ca_cia</caref>
+    <crt>{{ pki_client_crt | b64encode }}</crt>
+    <prv>{{ pki_client_key | b64encode }}</prv>
+  </cert>
+{% endif %}
+
+  <revisions></revisions>
+</pfsense>

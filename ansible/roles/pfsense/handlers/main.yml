@@ -1,0 +1,17 @@
+---
+# Recharge toute la configuration pfSense à partir du config.xml fraîchement écrit.
+# /etc/rc.reload_all relit config.xml et applique interfaces, filtre, NAT, OpenVPN,
+# Unbound, etc. sans reboot.
+- name: reload pfsense config
+  ansible.builtin.raw: |
+    /etc/rc.reload_all
+    sleep 3
+    php -r "
+      require_once('openvpn.inc');
+      require_once('config.inc');
+      global \$config;
+      \$config = parse_config(true);
+      openvpn_restart_all('server');
+      openvpn_restart_all('client');
+    " 2>/dev/null || true
+  changed_when: true

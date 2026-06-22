@@ -5,7 +5,7 @@
       - certbot
       - python3-certbot-nginx
     state: present
-    update_cache: yes
+    lock_timeout: 120
 
 - name: Deploy nginx site config
   template:

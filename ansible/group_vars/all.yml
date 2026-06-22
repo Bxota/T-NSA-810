@@ -1,14 +1,32 @@
-# Injecté depuis Doppler via env vars
-netbox_secret_key:     "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
-netbox_db_password:    "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
-netbox_admin_user:     "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
-netbox_admin_password: "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
-elastic_password:      "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
-kibana_password:       "{{ lookup('env', 'KIBANA_PASSWORD') }}"
-openvpn_ca_pass:       "{{ lookup('env', 'OPENVPN_CA_PASS') }}"
+# ── Secrets injectés depuis Doppler via env vars ──────────────────────────────
+netbox_secret_key:      "{{ lookup('env', 'NETBOX_SECRET_KEY') }}"
+netbox_db_password:     "{{ lookup('env', 'NETBOX_DB_PASSWORD') }}"
+netbox_admin_user:      "{{ lookup('env', 'NETBOX_ADMIN_USER') }}"
+netbox_admin_password:  "{{ lookup('env', 'NETBOX_ADMIN_PASSWORD') }}"
+netbox_terraform_token: "{{ lookup('env', 'NETBOX_API_TOKEN') }}"
+elastic_password:       "{{ lookup('env', 'ELASTIC_PASSWORD') }}"
+kibana_password:        "{{ lookup('env', 'KIBANA_PASSWORD') }}"
 
+# ── Réseau ────────────────────────────────────────────────────────────────────
 domain_s1: "s1.local"
 domain_s2: "s2.local"
-vpn_subnet: "10.8.0.0/24"
-lan_s1: "10.1.0.0/24"
-lan_s2: "10.2.0.0/24"
+lan_s1:    "10.1.0.0/24"
+lan_s2:    "10.2.0.0/24"
+web_ip:    "10.2.0.30"
+
+# ── DNS interne (Unbound pfSense : host overrides par domaine) ─────────────────
+dns_records:
+  - { host: netbox,  domain: "s1.local", ip: "10.1.0.10" }
+  - { host: elastic, domain: "s1.local", ip: "10.1.0.20" }
+  - { host: bastion, domain: "s2.local", ip: "10.2.0.5"  }
+  - { host: web,     domain: "s2.local", ip: "10.2.0.30" }
+
+# ── VPN ───────────────────────────────────────────────────────────────────────
+vpn_subnet:        "10.8.0.0/24"
+vpn_port:          1194
+# IP WAN publique de pfsense-s1 (pfsense-s2 s'y connecte pour établir le tunnel)
+openvpn_server_ip: "{{ lookup('env', 'OPENVPN_SERVER_IP') | mandatory }}"
+
+# ── pfSense ────────────────────────────────────────────────────────────────────
+# Hash bcrypt du mot de passe admin pfSense (injecté via Doppler PFSENSE_ADMIN_BCRYPT).
+pfsense_admin_bcrypt: "{{ lookup('env', 'PFSENSE_ADMIN_BCRYPT') }}"

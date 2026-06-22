@@ -1,0 +1,44 @@
+#!/bin/sh
+# kill-switch.sh — déconnexion d'urgence RÉVERSIBLE du site {{ inventory_hostname }}.
+#
+#   enable   : isole le site — coupe le WAN (donc le tunnel VPN et tout accès
+#              externe) et stoppe OpenVPN. Le LAN local reste fonctionnel.
+#   disable  : rétablit l'état nominal (WAN up + rechargement complet pfSense).
+#   status   : indique si le kill switch est actif.
+#
+# Usage : /root/kill-switch.sh <enable|disable|status>
+set -e
+
+WAN_IF="{{ pfsense_wan_if | default('vtnet0') }}"
+FLAG="/var/run/cia_killswitch"
+
+case "$1" in
+  enable)
+    echo "[kill-switch] Isolation du site {{ inventory_hostname }}..."
+    # Stoppe tous les tunnels OpenVPN
+    killall openvpn 2>/dev/null || true
+    # Coupe l'interface WAN (VPN + internet) — le LAN reste actif
+    ifconfig "$WAN_IF" down
+    touch "$FLAG"
+    echo "[kill-switch] ACTIF — WAN coupé, OpenVPN arrêté."
+    ;;
+  disable)
+    echo "[kill-switch] Rétablissement du site {{ inventory_hostname }}..."
+    ifconfig "$WAN_IF" up
+    rm -f "$FLAG"
+    # Recharge interfaces + OpenVPN + filtre à partir de config.xml
+    /etc/rc.reload_all
+    echo "[kill-switch] DÉSACTIVÉ — connectivité rétablie."
+    ;;
+  status)
+    if [ -f "$FLAG" ]; then
+      echo "kill switch: ACTIF (site isolé)"
+    else
+      echo "kill switch: inactif (nominal)"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 <enable|disable|status>" >&2
+    exit 1
+    ;;
+esac

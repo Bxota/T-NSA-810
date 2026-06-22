@@ -11,6 +11,8 @@
       - git
       - libpq-dev
     state: present
+  async: 600
+  poll: 20
 
 - name: Create netbox DB user
   become_user: postgres
@@ -24,18 +26,40 @@
     name: netbox
     owner: netbox
 
+- name: Create netbox system user
+  user:
+    name: netbox
+    system: yes
+    home: /home/netbox
+    create_home: yes
+
+- name: Check if /opt/netbox is a git repo
+  stat:
+    path: /opt/netbox/.git
+  register: netbox_git_dir
+
+- name: Remove /opt/netbox if not a git repo (leftover from failed run)
+  file:
+    path: /opt/netbox
+    state: absent
+  when: not netbox_git_dir.stat.exists
+
+- name: Create /opt/netbox directory owned by netbox
+  file:
+    path: /opt/netbox
+    state: directory
+    owner: netbox
+    group: netbox
+    mode: '0755'
+
 - name: Clone NetBox v4.2
+  become: yes
+  become_user: netbox
   git:
     repo: https://github.com/netbox-community/netbox.git
     dest: /opt/netbox
     version: v4.2.0
     depth: 1
-
-- name: Create netbox system user
-  user:
-    name: netbox
-    system: yes
-    home: /opt/netbox
 
 - name: Generate SECRET_KEY if not provided or too short
   shell: |
@@ -66,6 +90,8 @@
   command: /opt/netbox/upgrade.sh
   args:
     creates: /opt/netbox/venv/bin/gunicorn
+  async: 1800
+  poll: 30
 
 - name: Run database migrations
   command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py migrate --no-input
@@ -146,3 +172,21 @@
   loop:
     - netbox
     - nginx
+
+- name: Create Terraform API token
+  shell: |
+    /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py shell -c "
+    from users.models import Token
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    user = User.objects.get(username='{{ netbox_admin_user }}')
+    token, created = Token.objects.get_or_create(
+        user=user,
+        defaults={'key': '{{ netbox_terraform_token }}', 'description': 'Terraform IPAM'}
+    )
+    if not created and token.key != '{{ netbox_terraform_token }}':
+        token.key = '{{ netbox_terraform_token }}'
+        token.save()
+    "
+  become_user: netbox
+  changed_when: false
