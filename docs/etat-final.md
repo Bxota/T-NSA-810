@@ -32,15 +32,17 @@ la preuve correspondante dans le dépôt._
 | CI/CD — Automated tests | ✅ | Job `tests` : `ansible-playbook --syntax-check` |
 | CI/CD — Automated deployments | ❌ | `deploy.sh` reste déclenché manuellement (pas de CD) |
 | Golden Paths — VMs | ✅ | Modules Terraform réutilisables `vm-linux`, `vm-pfsense` |
-| Golden Paths — Firewall / IPAM / Logging | ⚠️ | Templatés (config.xml.j2, netbox-ipam, rôle filebeat) mais non packagés en bibliothèque dédiée |
+| Golden Paths — IPAM | ✅ | Module `netbox-ipam/modules/site` paramétrable (site + préfixe + IPs), 1 bloc par site |
+| Golden Paths — Logging | ✅ | Rôle `filebeat` réutilisable, appliqué sur les 6 VMs |
+| Golden Paths — Firewall | ⚠️ | Règles dans `config.xml.j2` (templates pfSense pré-configurés gérés par l'équipe) |
 | Advanced Monitoring — Dashboards | ✅ | Dashboard Kibana « CIA — Observabilité » provisionné en IaC |
 | Advanced Monitoring — Alerting | ✅ | 2 règles `.es-query` (brute-force SSH, pic d'erreurs) + connector, en IaC (`setup_alerts.py`) |
 | Advanced Monitoring — Log parsing | ❌ | Logs expédiés bruts ; parsing via modules Filebeat tenté mais non concluant sur cet environnement |
 | Multi-Site — Addressing conventions | ✅ | `10.N.0.0/24` par site (`locals.tf`), rôles paramétrés par `router_role` |
 | Multi-Site — Third-site onboarding | ✅ | Runbook [add-site.md](runbooks/add-site.md) |
 
-**Bilan bonus : ~7/10 items.** Manquent : déploiement continu automatisé, log parsing
-structuré, packaging formel des golden paths.
+**Bilan bonus : ~8/10 items.** Manquent : déploiement continu automatisé et log parsing
+structuré (le golden path firewall est couvert par les templates pfSense de l'équipe).
 
 ## Validation fonctionnelle (dernière vérification)
 
