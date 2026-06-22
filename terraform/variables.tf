@@ -34,3 +34,13 @@ variable "s2_template_id" {
   type    = number
   default = 9000
 }
+
+# Templates pfSense (firewall/routeur de site) — cf. bootstrap-proxmox.sh --with-pfsense
+variable "s1_pfsense_template_id" {
+  type    = number
+  default = 9100
+}
+variable "s2_pfsense_template_id" {
+  type    = number
+  default = 9100
+}

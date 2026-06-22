@@ -24,8 +24,14 @@ load_secrets() {
   # Mot de passe root Proxmox (pour bootstrap initial via sshpass)
   export PROXMOX_ROOT_PASSWORD=$(doppler secrets get PROXMOX_ROOT_PASSWORD --plain 2>/dev/null || echo "")
 
-  # IP WAN du router-s1 (pour que router-s2 sache où se connecter en VPN)
+  # IP WAN de pfsense-s1 (pour que pfsense-s2 sache où se connecter en VPN)
   export OPENVPN_SERVER_IP=$(doppler secrets get OPENVPN_SERVER_IP --plain 2>/dev/null || echo "")
+
+  # Hash bcrypt du mot de passe admin pfSense (injecté dans config.xml)
+  export PFSENSE_ADMIN_BCRYPT=$(doppler secrets get PFSENSE_ADMIN_BCRYPT --plain 2>/dev/null || echo "")
+
+  # Mot de passe SSH admin pfSense (auth par mot de passe, pas de clé)
+  export PFSENSE_ADMIN_PASSWORD=$(doppler secrets get PFSENSE_ADMIN_PASSWORD --plain 2>/dev/null || echo "")
 }
 
 # ── Variables Terraform ───────────────────────────────────────────────────────
@@ -41,6 +47,8 @@ build_tf_args() {
     -var "vm_password=$(doppler secrets get VM_PASSWORD --plain)"
     -var "s1_template_id=$(doppler secrets get TEMPLATE_ID --plain)"
     -var "s2_template_id=$(doppler secrets get TEMPLATE_ID_S2 --plain 2>/dev/null || doppler secrets get TEMPLATE_ID --plain)"
+    -var "s1_pfsense_template_id=$(doppler secrets get PFSENSE_TEMPLATE_ID --plain 2>/dev/null || echo 9100)"
+    -var "s2_pfsense_template_id=$(doppler secrets get PFSENSE_TEMPLATE_ID_S2 --plain 2>/dev/null || echo 9101)"
     -var "proxmox_s1_node=$(doppler secrets get PROXMOX_S1_NODE --plain)"
     -var "proxmox_s2_node=$(doppler secrets get PROXMOX_S2_NODE --plain)"
   )
@@ -60,7 +68,7 @@ case "$1" in
       scp -o StrictHostKeyChecking=no scripts/bootstrap-proxmox.sh root@${PROXMOX_S1_IP}:/tmp/
     SSHPASS="$PROXMOX_ROOT_PASSWORD" sshpass -e \
       ssh -o StrictHostKeyChecking=no root@${PROXMOX_S1_IP} \
-        "chmod +x /tmp/bootstrap-proxmox.sh && /tmp/bootstrap-proxmox.sh --site 1"
+        "chmod +x /tmp/bootstrap-proxmox.sh && /tmp/bootstrap-proxmox.sh --site 1 --with-pfsense"
     # Injecter la clé SSH Doppler dans pve1 (permet l'accès sans mot de passe ensuite)
     echo "[pve1] Injection clé SSH publique..."
     SSH_PUB_KEY=$(doppler secrets get SSH_PUBLIC_KEY --plain)
@@ -90,7 +98,7 @@ case "$1" in
     S2_TMPL=$(doppler secrets get TEMPLATE_ID_S2 --plain 2>/dev/null || echo "9001")
     SSHPASS="$PROXMOX_ROOT_PASSWORD" sshpass -e \
       ssh $SSH_OPTS root@${PROXMOX_S2_IP} \
-        "chmod +x /tmp/bootstrap-proxmox.sh && /tmp/bootstrap-proxmox.sh --site 2 --template-id ${S2_TMPL}"
+        "chmod +x /tmp/bootstrap-proxmox.sh && /tmp/bootstrap-proxmox.sh --site 2 --template-id ${S2_TMPL} --with-pfsense"
     # Injecter la clé SSH Doppler dans pve2 (permet l'accès sans mot de passe ensuite)
     echo "[pve2] Injection clé SSH publique..."
     SSH_PUB_KEY=$(doppler secrets get SSH_PUBLIC_KEY --plain)
@@ -111,13 +119,13 @@ case "$1" in
     ;;
 
   netbox-bootstrap)
-    # Phase 1 : router_s1 + netbox VM créés ensemble (netbox a besoin du router pour internet)
-    echo "--- Terraform apply (router_s1 + NetBox VM) ---"
+    # Phase 1 : pfsense_s1 + netbox VM créés ensemble (netbox a besoin de la gateway)
+    echo "--- Terraform apply (pfsense_s1 + NetBox VM) ---"
     load_secrets
     build_tf_args
     cd terraform/
     terraform apply -auto-approve \
-      -target=module.router_s1 \
+      -target=module.pfsense_s1 \
       -target=module.netbox \
       "${TF_ARGS[@]}"
     cd ..
@@ -149,7 +157,7 @@ EOF
     export ANSIBLE_SSH_ARGS="-F /tmp/cia_ssh_config"
     cd ansible/
     ansible-galaxy collection install -r requirements.yml -p ./collections
-    ansible-playbook -i inventory/hosts.yml site.yml --limit router_s1
+    ansible-playbook -i inventory/hosts.yml site.yml --limit pfsense_s1
     echo "--- Ansible (rôle netbox) ---"
     ansible-playbook -i inventory/hosts.yml site.yml --limit netbox
     rm -f /tmp/cia_ssh_config
@@ -273,6 +281,21 @@ EOF
     echo "=> pve2 désormais accessible via ${NEW_IP} (via ProxyJump pve1 si nested)"
     ;;
 
+  kill-switch|restore)
+    # Déconnexion d'urgence réversible d'un site (ou des deux).
+    # Usage : ./deploy.sh kill-switch <s1|s2|all>   /   ./deploy.sh restore <s1|s2|all>
+    ACTION="enable"; [[ "$1" == "restore" ]] && ACTION="disable"
+    TARGET="${2:-all}"
+    load_secrets
+    [[ -f /tmp/cia_infra ]] || { echo "Clé SSH absente — lancer d'abord : ./deploy.sh ssh-key"; exit 1; }
+    run_ks() { # $1 = pfsense LAN IP, $2 = proxmox WAN IP
+      ssh -i /tmp/cia_infra -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        -o "ProxyJump=root@${2}" admin@${1} "/root/kill-switch.sh ${ACTION}"
+    }
+    [[ "$TARGET" == "s1" || "$TARGET" == "all" ]] && { echo "--- pfsense_s1 → ${ACTION} ---"; run_ks 10.1.0.1 "${PROXMOX_S1_IP}"; }
+    [[ "$TARGET" == "s2" || "$TARGET" == "all" ]] && { echo "--- pfsense_s2 → ${ACTION} ---"; run_ks 10.2.0.1 "${PROXMOX_S2_IP}"; }
+    ;;
+
   all)
     $0 bootstrap-s1
     $0 bootstrap-s2
@@ -296,17 +319,19 @@ EOF
   *)
     echo "Usage: ./deploy.sh <commande> [args]"
     echo ""
-    echo "  bootstrap-s1       Crée vmbr1 + template Ubuntu sur pve1, injecte clé SSH"
+    echo "  bootstrap-s1       Crée vmbr1 + templates Ubuntu & pfSense sur pve1, injecte clé SSH"
     echo "  set-pve2-ip [ip]   Change l'IP de gestion de pve2 (défaut: 10.1.0.200)"
-    echo "                     Évite le conflit avec router_s1 (10.1.0.1)"
+    echo "                     Évite le conflit avec pfsense_s1 (10.1.0.1)"
     echo "                     Met à jour PROXMOX_S2_IP dans Doppler automatiquement"
-    echo "  bootstrap-s2       Crée vmbr2 + template Ubuntu sur pve2, injecte clé SSH"
+    echo "  bootstrap-s2       Crée vmbr2 + templates Ubuntu & pfSense sur pve2, injecte clé SSH"
     echo "  init               Terraform init (terraform/ + terraform/netbox-ipam/)"
-    echo "  netbox-bootstrap   Terraform (router_s1 + NetBox VM) + Ansible (router_s1 → netbox)"
+    echo "  netbox-bootstrap   Terraform (pfsense_s1 + NetBox VM) + Ansible (pfsense_s1 → netbox)"
     echo "  ipam               Terraform apply netbox-ipam/ (sites, préfixes, IPs dans NetBox)"
-    echo "  infra              Terraform apply (6 VMs)"
+    echo "  infra              Terraform apply (6 VMs + 2 pfSense)"
     echo "  destroy            Terraform destroy"
     echo "  config             Ansible (configure tous les services)"
+    echo "  kill-switch <t>    Déconnexion d'urgence d'un site : t = s1|s2|all"
+    echo "  restore <t>        Rétablit la connectivité : t = s1|s2|all"
     echo "  all                Enchaîne : bootstrap → netbox-bootstrap → ipam → infra → config"
     echo "  ssh-key            Exporte la clé SSH depuis Doppler → /tmp/cia_infra"
     exit 1

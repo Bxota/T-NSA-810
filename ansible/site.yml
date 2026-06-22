@@ -1,35 +1,20 @@
 ---
-# ── 1. Routers en premier : ils fournissent la gateway aux autres VMs ─────────
-- name: Setup router Site 1
-  hosts: router_s1
-  become: true
-  roles: [common, router]
-
-# Le router S2 peut être configuré en parallèle SAUF pour la partie client VPN
-# (qui nécessite le client.ovpn généré par router_s1). Le common est safe.
-- name: Common setup router Site 2
-  hosts: router_s2
-  become: true
+# ── 1. pfSense Site 1 (serveur VPN) — génère la PKI, fournit la gateway S1 ─────
+# pfSense n'a pas python avant que le rôle ne l'installe (via raw) → gather_facts off.
+- name: Setup pfSense Site 1 (firewall + VPN server)
+  hosts: pfsense_s1
   gather_facts: false
-  pre_tasks:
-    - name: Wait for router S2 SSH
-      wait_for_connection:
-        timeout: 300
-        sleep: 5
+  roles: [pfsense]
 
-    - name: Gather router S2 facts
-      setup:
-  roles: [common]
-
-# La config VPN client sur S2 se fait après que S1 ait généré le client.ovpn
-- name: Setup router Site 2 (VPN client)
-  hosts: router_s2
-  become: true
-  roles: [router]
+# ── 1bis. pfSense Site 2 (client VPN) — consomme la PKI exposée par S1 ─────────
+- name: Setup pfSense Site 2 (firewall + VPN client)
+  hosts: pfsense_s2
+  gather_facts: false
+  roles: [pfsense]
 
 # ── 2. Setup commun sur toutes les VMs applicatives ───────────────────────────
 - name: Common setup all app VMs
-  hosts: all:!proxmox_s1:!proxmox_s2:!router_s1:!router_s2
+  hosts: all:!proxmox_s1:!proxmox_s2:!pfsense_s1:!pfsense_s2
   become: true
   roles: [common]
 

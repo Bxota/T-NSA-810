@@ -40,7 +40,7 @@ resource "netbox_prefix" "vpn" {
 resource "netbox_ip_address" "router_s1_lan" {
   ip_address = var.ip_router_s1_lan
   status     = "active"
-  dns_name   = "router-s1.s1.cia"
+  dns_name   = "pfsense-s1.s1.cia"
 }
 
 resource "netbox_ip_address" "netbox" {
@@ -58,7 +58,7 @@ resource "netbox_ip_address" "elasticsearch" {
 resource "netbox_ip_address" "router_s2_lan" {
   ip_address = var.ip_router_s2_lan
   status     = "active"
-  dns_name   = "router-s2.s2.cia"
+  dns_name   = "pfsense-s2.s2.cia"
 }
 
 resource "netbox_ip_address" "bastion" {

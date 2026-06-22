@@ -1,0 +1,97 @@
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Rôle pfSense — firewall / routeur de site, configuré 100 % via config.xml
+# pfSense (FreeBSD) n'a ni apt ni python par défaut : on installe python3 via pkg
+# (module `raw`) pour pouvoir utiliser ensuite les modules template/slurp.
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+# ── Python (préalable aux modules template/slurp) ─────────────────────────────
+- name: Installer python3 sur pfSense (idempotent)
+  ansible.builtin.raw: |
+    if [ ! -x /usr/local/bin/python3 ]; then
+      env ASSUME_ALWAYS_YES=yes pkg install -y python311
+      ln -sf /usr/local/bin/python3.11 /usr/local/bin/python3
+    fi
+  changed_when: false
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PKI OpenVPN — générée UNE fois sur pfSense-s1 (serveur), puis injectée dans les
+# config.xml des deux pfSense. openssl est présent sur pfSense (FreeBSD base).
+# ══════════════════════════════════════════════════════════════════════════════
+- name: "[server] Déployer le script de bootstrap PKI"
+  ansible.builtin.template:
+    src: pki-bootstrap.sh.j2
+    dest: /root/cia-pki-bootstrap.sh
+    mode: "0700"
+  when: router_role == "server"
+
+- name: "[server] Générer la PKI (CA, certs serveur/client, ta.key)"
+  ansible.builtin.command: /bin/sh /root/cia-pki-bootstrap.sh
+  args:
+    creates: /root/cia-pki/ta.key
+  when: router_role == "server"
+
+- name: "[server] Lire les éléments PKI"
+  ansible.builtin.slurp:
+    src: "/root/cia-pki/{{ item }}"
+  register: pki_files
+  loop:
+    - ca.crt
+    - server.crt
+    - server.key
+    - client.crt
+    - client.key
+    - ta.key
+    - dh.pem
+  when: router_role == "server"
+
+- name: "[server] Exposer la PKI en facts (base64, consommés par le client)"
+  ansible.builtin.set_fact:
+    pki_ca:         "{{ pki_files.results[0].content | b64decode }}"
+    pki_server_crt: "{{ pki_files.results[1].content | b64decode }}"
+    pki_server_key: "{{ pki_files.results[2].content | b64decode }}"
+    pki_client_crt: "{{ pki_files.results[3].content | b64decode }}"
+    pki_client_key: "{{ pki_files.results[4].content | b64decode }}"
+    pki_ta:         "{{ pki_files.results[5].content | b64decode }}"
+    pki_dh:         "{{ pki_files.results[6].content | b64decode }}"
+  when: router_role == "server"
+
+# Le client (pfsense_s2) lit la PKI directement sur le disque de pfsense_s1 via
+# delegate_to — évite la dépendance aux set_fact inter-plays (non persistants entre
+# invocations séparées, ex. --limit pfsense_s2).
+- name: "[client] Lire la PKI depuis le disque de pfsense_s1"
+  ansible.builtin.slurp:
+    src: "/root/cia-pki/{{ item }}"
+  register: pki_files_client
+  loop:
+    - ca.crt
+    - client.crt
+    - client.key
+    - ta.key
+  delegate_to: pfsense_s1
+  when: router_role == "client"
+
+- name: "[client] Exposer la PKI en facts"
+  ansible.builtin.set_fact:
+    pki_ca:         "{{ pki_files_client.results[0].content | b64decode }}"
+    pki_client_crt: "{{ pki_files_client.results[1].content | b64decode }}"
+    pki_client_key: "{{ pki_files_client.results[2].content | b64decode }}"
+    pki_ta:         "{{ pki_files_client.results[3].content | b64decode }}"
+  when: router_role == "client"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Config principale : génération + déploiement de config.xml
+# ══════════════════════════════════════════════════════════════════════════════
+- name: Déployer le kill-switch
+  ansible.builtin.template:
+    src: kill-switch.sh.j2
+    dest: /root/kill-switch.sh
+    mode: "0700"
+
+- name: Déployer config.xml
+  ansible.builtin.template:
+    src: config.xml.j2
+    dest: /cf/conf/config.xml
+    mode: "0600"
+  notify: reload pfsense config
