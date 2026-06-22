@@ -175,6 +175,16 @@
       <topology>subnet</topology>
       <custom_options>keepalive 10 120;</custom_options>
     </openvpn-server>
+    <!-- Client-Specific-Override : iroute indispensable en mode server p2p_tls
+         pour que OpenVPN sache que le LAN Site 2 vit derrière ce client.
+         Sans iroute, seul l'IP tunnel du client (10.8.0.2) est joignable,
+         pas les hôtes du LAN distant (10.2.0.x). -->
+    <openvpn-csc>
+      <common_name>client</common_name>
+      <description>iroute LAN Site 2 (vers le tunnel)</description>
+      <remote_network>{{ lan_s2 }}</remote_network>
+      <server_list>1</server_list>
+    </openvpn-csc>
   </openvpn>
 {% else %}
   <openvpn>

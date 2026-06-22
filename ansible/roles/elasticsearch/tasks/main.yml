@@ -113,3 +113,35 @@
   loop:
     - kibana
     - logstash
+
+# ── Dashboards Kibana (IaC) ───────────────────────────────────────────────────
+# Le NDJSON (data view + visualisations + dashboard) est versionné dans le repo et
+# importé via l'API saved_objects. overwrite=true → idempotent (réimport sans doublon).
+- name: Attendre que Kibana réponde
+  uri:
+    url: "http://localhost:5601/api/status"
+    method: GET
+    url_username: "elastic"
+    url_password: "{{ elastic_password }}"
+    force_basic_auth: yes
+    status_code: [200]
+  register: kibana_status
+  until: kibana_status.status == 200
+  retries: 30
+  delay: 10
+
+- name: Copier le NDJSON des dashboards
+  copy:
+    src: kibana-dashboard.ndjson
+    dest: /tmp/kibana-dashboard.ndjson
+    mode: "0644"
+
+- name: Importer les objets Kibana (data view + visualisations + dashboard)
+  ansible.builtin.command: >
+    curl -sf -u "elastic:{{ elastic_password }}"
+    "http://localhost:5601/api/saved_objects/_import?overwrite=true"
+    -H "kbn-xsrf: true"
+    -F file=@/tmp/kibana-dashboard.ndjson
+  register: kibana_import
+  changed_when: '"\"successCount\"" in kibana_import.stdout'
+  failed_when: '"\"success\":true" not in kibana_import.stdout'
