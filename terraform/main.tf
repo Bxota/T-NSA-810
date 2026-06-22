@@ -11,7 +11,7 @@ module "pfsense_s1" {
   vm_name     = "cia-pf-s1"
   target_node = var.proxmox_s1_node
   cores       = 2
-  memory      = 2048
+  memory      = 3072
   storage     = var.storage
   pfsense_iso = var.pfsense_iso
   networks = [
@@ -30,8 +30,8 @@ module "netbox" {
   clone       = var.s1_template_id
   storage     = var.storage
   cores       = 2
-  memory      = 4096
-  disk_size   = 40
+  memory      = 6144
+  disk_size   = 20
   bridge      = "vmbr1"
   ip_address  = local.ip.netbox
   gateway     = local.gw.s1 # 10.1.0.1 = pfSense S1
@@ -51,7 +51,7 @@ module "elasticsearch" {
   storage     = var.storage
   cores       = 4
   memory      = 8192
-  disk_size   = 80
+  disk_size   = 30
   bridge      = "vmbr1"
   ip_address  = local.ip.elasticsearch
   gateway     = local.gw.s1
@@ -73,7 +73,7 @@ module "pfsense_s2" {
   vm_name     = "cia-pf-s2"
   target_node = var.proxmox_s2_node
   cores       = 2
-  memory      = 2048
+  memory      = 3072
   storage     = var.storage
   pfsense_iso = var.pfsense_iso
   networks = [
@@ -92,7 +92,7 @@ module "bastion" {
   clone       = var.s2_template_id
   storage     = var.storage
   cores       = 1
-  memory      = 2048
+  memory      = 4096
   disk_size   = 20
   bridge      = "vmbr2"
   ip_address  = local.ip.bastion
@@ -112,7 +112,7 @@ module "webserver" {
   clone       = var.s2_template_id
   storage     = var.storage
   cores       = 2
-  memory      = 2048
+  memory      = 4096
   disk_size   = 30
   bridge      = "vmbr2"
   ip_address  = local.ip.webserver

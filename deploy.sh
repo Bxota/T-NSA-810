@@ -117,7 +117,6 @@ case "$1" in
     build_tf_args
     cd terraform/
     terraform apply -auto-approve \
-      -target=module.router_s1 \
       -target=module.netbox \
       "${TF_ARGS[@]}"
     cd ..
@@ -149,7 +148,6 @@ EOF
     export ANSIBLE_SSH_ARGS="-F /tmp/cia_ssh_config"
     cd ansible/
     ansible-galaxy collection install -r requirements.yml -p ./collections
-    ansible-playbook -i inventory/hosts.yml site.yml --limit router_s1
     echo "--- Ansible (rôle netbox) ---"
     ansible-playbook -i inventory/hosts.yml site.yml --limit netbox
     rm -f /tmp/cia_ssh_config

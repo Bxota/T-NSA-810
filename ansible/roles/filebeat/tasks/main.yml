@@ -20,6 +20,20 @@
     dest: /etc/filebeat/filebeat.yml
   notify: restart filebeat
 
+- name: Enable Filebeat system module
+  command: filebeat modules enable system
+  register: fb_mod
+  changed_when: "'Enabled' in fb_mod.stdout"
+  failed_when: false
+
+# Charge les dashboards officiels Filebeat dans Kibana — une seule fois,
+# depuis le noeud elasticsearch (Kibana joignable localement).
+- name: Load Filebeat dashboards into Kibana
+  command: filebeat setup --dashboards
+  when: inventory_hostname == 'elasticsearch'
+  changed_when: false
+  failed_when: false
+
 - name: Enable filebeat
   systemd:
     name: filebeat
