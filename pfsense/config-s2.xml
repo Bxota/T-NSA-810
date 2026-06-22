@@ -118,12 +118,12 @@
 			<protocol>UDP4</protocol>
 			<dev_mode>tun</dev_mode>
 			<interface>wan</interface>
-			<server_addr>__IP_WAN_PF_S1__</server_addr>
+			<server_addr>192.168.1.115</server_addr>
 			<server_port>1194</server_port>
 			<description><![CDATA[S2<->S1 site-to-site]]></description>
 			<tunnel_network>10.8.0.0/24</tunnel_network>
 			<remote_network>10.1.0.0/24</remote_network>
-			<data_ciphers_fallback>AES-256-GCM</data_ciphers_fallback>
+			<data_ciphers_fallback>AES-256-CBC</data_ciphers_fallback>
 			<digest>SHA256</digest>
 			<shared_key>IwojIDIwNDggYml0IE9wZW5WUE4gc3RhdGljIGtleQojCi0tLS0tQkVHSU4gT3BlblZQTiBTdGF0aWMga2V5IFYxLS0tLS0KNTc3OGE5ZWVkMWY4ZjU5YjE5ZGJjZWQ0NTE2MGM1MzcKNmUzYmU2YTUyODUwZTYwZWI5OWE5NTJhNjY5MGM5NDAKNTljMjZmMWE1MGE1MTAyNDJhMzliNDUxZjFiY2M2OTAKOWRjNWRjNWVmOTA4OTFkODQwZTVjZTExNmFjMTk5YWQKYzM3OTk5Mjc2NzNiYTUzYjE2NWEzYzczYThiNmI2NjYKOGEwMjNlYzcwMDM0NzgxMjRiNDRkMTFjYjMzYzBlZWQKNTUzZmQ0NWVhOTQxOWQzMTBlYzJjMjc1ZmExNjVmMTEKMDNkNDM1M2NjMmU2ZjcxYTFkYWZmNDBkNWU0NzI1MGIKNzA0N2Q4MDkxOGE0Mjk4M2NhNmRkNDgzZDg1MTY5ODIKOWFhYmQ5ZDM4OWY5M2E5NTM2MTI1YTViNmJlNDdlMTcKZjM4OGE2YTg4ZjlhOTdlOThkN2I2YWNiNmE2NzI4YzMKMWE1M2FhYTY1OTMxZmNlZGJmMWNjMGZjYWRkMjViNjMKZDcyZDBlODMzMzVhNDM3OTI4YmQxNGViOWU2YzBjOGUKYjY3NDY5ZWNiZTZhODFiMDQyMzIxZTgzYjc5MzJlYjUKZGQwYTg2NDgxNTBjNGQ0M2NmYzNkYzAyMDk1OTViY2QKNGY1YWFmNDA2YzJmYjQ1MjBlYTFjN2M5NGIyNGI0OWUKLS0tLS1FTkQgT3BlblZQTiBTdGF0aWMga2V5IFYxLS0tLS0K</shared_key>
 		</openvpn-client>

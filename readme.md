@@ -48,3 +48,5 @@ qm template 9000
 cd terraform/
 terraform state list | xargs -I{} terraform state rm {}
 ```
+
+bite
