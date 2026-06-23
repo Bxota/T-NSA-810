@@ -10,10 +10,9 @@ module "pfsense_s1" {
   vm_id       = 400
   vm_name     = "cia-pf-s1"
   target_node = var.proxmox_s1_node
+  template_id = var.pfsense_template_s1
   cores       = 2
   memory      = 3072
-  storage     = var.storage
-  pfsense_iso = var.pfsense_iso
   networks = [
     { bridge = "vmbr0" }, # WAN  -> reseau du parent / internet
     { bridge = "vmbr1" }, # LAN  -> 10.1.0.0/24 (gateway pfSense = 10.1.0.1)
@@ -72,10 +71,9 @@ module "pfsense_s2" {
   vm_id       = 403
   vm_name     = "cia-pf-s2"
   target_node = var.proxmox_s2_node
+  template_id = var.pfsense_template_s2
   cores       = 2
   memory      = 3072
-  storage     = var.storage
-  pfsense_iso = var.pfsense_iso
   networks = [
     { bridge = "vmbr0" }, # WAN
     { bridge = "vmbr2" }, # LAN -> 10.2.0.0/24 (gateway pfSense = 10.2.0.1)

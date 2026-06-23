@@ -25,11 +25,16 @@ variable "vm_password" {
 }
 variable "storage" { default = "local-lvm" }
 
-# ── pfSense ──────────────────────────────────────────────────────────────────
-variable "pfsense_iso" {
-  description = "Volid de l'ISO pfSense sur le stockage 'local' de chaque noeud"
-  type        = string
-  default     = "local:iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
+# ── pfSense (templates a cloner) ─────────────────────────────────────────────
+variable "pfsense_template_s1" {
+  description = "VMID du template pfSense sur le noeud S1 (pve2)"
+  type        = number
+  default     = 9100
+}
+variable "pfsense_template_s2" {
+  description = "VMID du template pfSense sur le noeud S2 (pve3)"
+  type        = number
+  default     = 9101
 }
 
 # ── Templates ────────────────────────────────────────────────────────────────

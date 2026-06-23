@@ -6,22 +6,20 @@ terraform {
   }
 }
 
-# Module pfSense — repris de la branche main, adapte pour le cluster a deux noeuds.
-# Cree une VM pfSense (install depuis ISO) avec N cartes reseau (WAN puis LAN).
-# La config interne (interfaces, regles, OpenVPN, DNS, NAT) se fait DANS pfSense
-# (console/GUI ou restauration d'un config.xml) — voir docs/pfSense-config.md.
+# Module pfSense — mode CLONE.
+# Clone un template pfSense (installe + SSH active) au lieu d'installer depuis l'ISO.
+# La config par site (LAN, OpenVPN, regles, DNS) vient du config.xml importe ensuite
+# (config-s1.xml / config-s2.xml) — voir pfsense/README.md.
 
 variable "vm_id" {}
 variable "vm_name" {}
 variable "target_node" {}
+variable "template_id" {
+  description = "VMID du template pfSense a cloner (9100 sur pve2, 9101 sur pve3)"
+  type        = number
+}
 variable "cores" { default = 2 }
 variable "memory" { default = 2048 }
-variable "disk_size" { default = 16 }
-variable "storage" { default = "local-lvm" }
-variable "pfsense_iso" {
-  description = "Volid de l'ISO pfSense sur le stockage 'local' du noeud"
-  default     = "local:iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
-}
 variable "networks" {
   description = "Liste ordonnee des bridges : [0]=WAN, [1]=LAN"
   type        = list(object({ bridge = string }))
@@ -32,7 +30,11 @@ resource "proxmox_virtual_environment_vm" "pfsense" {
   name          = var.vm_name
   node_name     = var.target_node
   scsi_hardware = "virtio-scsi-pci"
-  boot_order    = ["ide2", "scsi0"]
+
+  clone {
+    vm_id = var.template_id
+    full  = true
+  }
 
   operating_system {
     type = "other"
@@ -40,24 +42,11 @@ resource "proxmox_virtual_environment_vm" "pfsense" {
 
   cpu {
     cores = var.cores
-    type  = "host" # expose les instructions de virtualisation (nested)
+    type  = "host" # expose la virtualisation (nested)
   }
 
   memory {
     dedicated = var.memory
-  }
-
-  cdrom {
-    enabled   = true
-    file_id   = var.pfsense_iso
-    interface = "ide2"
-  }
-
-  disk {
-    datastore_id = var.storage
-    interface    = "scsi0"
-    size         = var.disk_size
-    file_format  = "raw"
   }
 
   dynamic "network_device" {
@@ -70,7 +59,7 @@ resource "proxmox_virtual_environment_vm" "pfsense" {
 
   # pfSense gere ses interfaces lui-meme : on ignore les diffs reseau/disque
   lifecycle {
-    ignore_changes = [network_device, disk, cdrom]
+    ignore_changes = [network_device, disk]
   }
 }
 
