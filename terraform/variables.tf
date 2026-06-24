@@ -1,22 +1,12 @@
-# ── Proxmox Site 1 ───────────────────────────────────────────────────────────
-variable "proxmox_s1_api_url" { type = string }
-variable "proxmox_s1_token_id" { type = string }
-variable "proxmox_s1_token_secret" {
+# ── Accès cluster Proxmox (un seul jeu : le cluster gère tous les noeuds) ─────
+variable "proxmox_api_url" { type = string }
+variable "proxmox_token_id" { type = string }
+variable "proxmox_token_secret" {
   type      = string
   sensitive = true
 }
-variable "proxmox_s1_node" { default = "pve" }
 
-# ── Proxmox Site 2 ───────────────────────────────────────────────────────────
-variable "proxmox_s2_api_url" { type = string }
-variable "proxmox_s2_token_id" { type = string }
-variable "proxmox_s2_token_secret" {
-  type      = string
-  sensitive = true
-}
-variable "proxmox_s2_node" { default = "pve" }
-
-# ── VM commun ────────────────────────────────────────────────────────────────
+# ── Commun VMs ───────────────────────────────────────────────────────────────
 variable "ssh_public_key" { type = string }
 variable "vm_user" { default = "cia" }
 variable "vm_password" {
@@ -25,24 +15,22 @@ variable "vm_password" {
 }
 variable "storage" { default = "local-lvm" }
 
-# ── pfSense (templates a cloner) ─────────────────────────────────────────────
-variable "pfsense_template_s1" {
-  description = "VMID du template pfSense sur le noeud S1 (pve2)"
-  type        = number
-  default     = 9100
-}
-variable "pfsense_template_s2" {
-  description = "VMID du template pfSense sur le noeud S2 (pve3)"
-  type        = number
-  default     = 9101
-}
-
-# ── Templates ────────────────────────────────────────────────────────────────
-variable "s1_template_id" {
-  type    = number
-  default = 9000
-}
-variable "s2_template_id" {
-  type    = number
-  default = 9000
+# ── Définition des sites — AJOUTER UN SITE = AJOUTER UNE ENTRÉE ───────────────
+# La topologie réelle est dans sites.auto.tfvars (chargé automatiquement).
+variable "sites" {
+  type = map(object({
+    node             = string # noeud Proxmox hôte du site
+    lan_bridge       = string # bridge LAN (vmbr1, vmbr2, …)
+    gateway          = string # IP LAN du pfSense = gateway des VMs
+    pfsense_vmid     = number
+    pfsense_template = number # VMID du template pfSense sur ce noeud
+    ubuntu_template  = number # VMID du template Ubuntu sur ce noeud
+    vms = map(object({
+      vmid   = number
+      cores  = number
+      memory = number
+      disk   = number
+      ip     = string # ex: "10.1.0.10/24"
+    }))
+  }))
 }

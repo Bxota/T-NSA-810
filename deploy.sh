@@ -29,20 +29,15 @@ load_secrets() {
 }
 
 # ── Variables Terraform ───────────────────────────────────────────────────────
+# Un seul jeu de creds cluster (le cluster gère tous les noeuds).
+# La topologie des sites vient de terraform/sites.auto.tfvars (chargé auto).
 build_tf_args() {
   TF_ARGS=(
-    -var "proxmox_s1_api_url=$(doppler secrets get PROXMOX_S1_API_URL --plain)"
-    -var "proxmox_s1_token_id=$(doppler secrets get PROXMOX_S1_TOKEN_ID --plain)"
-    -var "proxmox_s1_token_secret=$(doppler secrets get PROXMOX_S1_TOKEN_SECRET --plain)"
-    -var "proxmox_s2_api_url=$(doppler secrets get PROXMOX_S2_API_URL --plain)"
-    -var "proxmox_s2_token_id=$(doppler secrets get PROXMOX_S2_TOKEN_ID --plain)"
-    -var "proxmox_s2_token_secret=$(doppler secrets get PROXMOX_S2_TOKEN_SECRET --plain)"
+    -var "proxmox_api_url=$(doppler secrets get PROXMOX_API_URL --plain)"
+    -var "proxmox_token_id=$(doppler secrets get PROXMOX_TOKEN_ID --plain)"
+    -var "proxmox_token_secret=$(doppler secrets get PROXMOX_TOKEN_SECRET --plain)"
     -var "ssh_public_key=$(doppler secrets get SSH_PUBLIC_KEY --plain)"
     -var "vm_password=$(doppler secrets get VM_PASSWORD --plain)"
-    -var "s1_template_id=$(doppler secrets get TEMPLATE_ID --plain)"
-    -var "s2_template_id=$(doppler secrets get TEMPLATE_ID_S2 --plain 2>/dev/null || doppler secrets get TEMPLATE_ID --plain)"
-    -var "proxmox_s1_node=$(doppler secrets get PROXMOX_S1_NODE --plain)"
-    -var "proxmox_s2_node=$(doppler secrets get PROXMOX_S2_NODE --plain)"
   )
 }
 
@@ -117,7 +112,7 @@ case "$1" in
     build_tf_args
     cd terraform/
     terraform apply -auto-approve \
-      -target=module.netbox \
+      -target='module.vm["s1-netbox"]' \
       "${TF_ARGS[@]}"
     cd ..
     echo "--- Nettoyage SSH known_hosts ---"

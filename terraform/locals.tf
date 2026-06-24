@@ -1,21 +1,24 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# Source de vérité des adresses IP
-# Ces valeurs alimentent à la fois les VMs Proxmox et le plan IPAM NetBox
-# (terraform/netbox-ipam/)
+# Aplatissement des VMs de tous les sites en une seule map "site-service",
+# pour pouvoir les déployer avec un for_each unique dans main.tf.
+# Ex: { "s1-netbox" = {...}, "s1-elastic" = {...}, "s2-bastion" = {...}, ... }
 # ══════════════════════════════════════════════════════════════════════════════
-
 locals {
-  ip = {
-    router_s1_lan = "10.1.0.1/24"
-    netbox        = "10.1.0.10/24"
-    elasticsearch = "10.1.0.20/24"
-    router_s2_lan = "10.2.0.1/24"
-    bastion       = "10.2.0.5/24"
-    webserver     = "10.2.0.30/24"
-  }
-
-  gw = {
-    s1 = split("/", local.ip.router_s1_lan)[0]
-    s2 = split("/", local.ip.router_s2_lan)[0]
-  }
+  vms = merge([
+    for site_key, site in var.sites : {
+      for vm_key, vm in site.vms :
+      "${site_key}-${vm_key}" => {
+        name     = vm_key
+        node     = site.node
+        bridge   = site.lan_bridge
+        gateway  = site.gateway
+        template = site.ubuntu_template
+        vmid     = vm.vmid
+        cores    = vm.cores
+        memory   = vm.memory
+        disk     = vm.disk
+        ip       = vm.ip
+      }
+    }
+  ]...)
 }
