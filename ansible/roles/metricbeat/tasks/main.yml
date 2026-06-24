@@ -1,0 +1,43 @@
+---
+- name: Add Elastic GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elastic repo
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+
+- name: Install Metricbeat
+  apt:
+    name: metricbeat
+    state: present
+    update_cache: yes
+
+- name: Deploy metricbeat.yml
+  template:
+    src: metricbeat.yml.j2
+    dest: /etc/metricbeat/metricbeat.yml
+  notify: restart metricbeat
+
+- name: Enable Metricbeat system module
+  command: metricbeat modules enable system
+  register: mb_mod
+  changed_when: "'Enabled' in mb_mod.stdout"
+  failed_when: false
+
+# Charge les dashboards officiels Metricbeat dans Kibana — une seule fois,
+# depuis le noeud elasticsearch (qui héberge Kibana, joignable localement).
+- name: Load Metricbeat dashboards into Kibana
+  command: metricbeat setup --dashboards
+  when: inventory_hostname == 'elasticsearch'
+  register: mb_setup
+  changed_when: false
+  failed_when: false
+
+- name: Enable and start Metricbeat
+  systemd:
+    name: metricbeat
+    enabled: yes
+    state: started

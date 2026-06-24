@@ -1,0 +1,24 @@
+# Pipeline Logstash : reçoit les logs syslog des pfSense (S1 + S2) et les
+# indexe dans Elasticsearch. pfSense → Remote Logging → 10.1.0.20:5140 (UDP).
+input {
+  udp {
+    port => 5140
+    type => "pfsense-syslog"
+  }
+}
+
+filter {
+  grok {
+    match => { "message" => "%{SYSLOGLINE}" }
+    tag_on_failure => ["_grokparsefailure_syslog"]
+  }
+}
+
+output {
+  elasticsearch {
+    hosts    => ["http://localhost:9200"]
+    user     => "elastic"
+    password => "{{ elastic_password }}"
+    index    => "pfsense-%{+YYYY.MM.dd}"
+  }
+}

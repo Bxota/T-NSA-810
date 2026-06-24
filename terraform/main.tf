@@ -1,26 +1,22 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# SITE 1 — Proxmox S1
-# Réseau LAN : 10.1.0.0/24 via vmbr1
+# SITE 1 — Proxmox S1 (noeud var.proxmox_s1_node)
+# Reseau LAN : 10.1.0.0/24 via vmbr1  ·  Firewall : pfSense (LAN 10.1.0.1)
 # ══════════════════════════════════════════════════════════════════════════════
 
-module "router_s1" {
-  source    = "./modules/vm-router"
+module "pfsense_s1" {
+  source    = "./modules/vm-pfsense"
   providers = { proxmox = proxmox.pve_s1 }
 
   vm_id       = 400
-  vm_name     = "cia-router-s1"
+  vm_name     = "cia-pf-s1"
   target_node = var.proxmox_s1_node
-  clone       = var.s1_template_id
-  storage     = var.storage
+  template_id = var.pfsense_template_s1
   cores       = 2
-  memory      = 2048
-  disk_size   = 10
-  wan_bridge  = "vmbr0" # WAN → internet
-  lan_bridge  = "vmbr1" # LAN S1 10.1.0.0/24
-  lan_ip      = local.ip.router_s1_lan
-  ssh_key     = var.ssh_public_key
-  vm_user     = var.vm_user
-  vm_password = var.vm_password
+  memory      = 3072
+  networks = [
+    { bridge = "vmbr0" }, # WAN  -> reseau du parent / internet
+    { bridge = "vmbr1" }, # LAN  -> 10.1.0.0/24 (gateway pfSense = 10.1.0.1)
+  ]
 }
 
 module "netbox" {
@@ -33,11 +29,11 @@ module "netbox" {
   clone       = var.s1_template_id
   storage     = var.storage
   cores       = 2
-  memory      = 4096
-  disk_size   = 40
+  memory      = 6144
+  disk_size   = 20
   bridge      = "vmbr1"
   ip_address  = local.ip.netbox
-  gateway     = local.gw.s1
+  gateway     = local.gw.s1 # 10.1.0.1 = pfSense S1
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -54,7 +50,7 @@ module "elasticsearch" {
   storage     = var.storage
   cores       = 4
   memory      = 8192
-  disk_size   = 80
+  disk_size   = 30
   bridge      = "vmbr1"
   ip_address  = local.ip.elasticsearch
   gateway     = local.gw.s1
@@ -64,28 +60,24 @@ module "elasticsearch" {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SITE 2 — Proxmox S2
-# Réseau LAN : 10.2.0.0/24 via vmbr2
+# SITE 2 — Proxmox S2 (noeud var.proxmox_s2_node)
+# Reseau LAN : 10.2.0.0/24 via vmbr2  ·  Firewall : pfSense (LAN 10.2.0.1)
 # ══════════════════════════════════════════════════════════════════════════════
 
-module "router_s2" {
-  source    = "./modules/vm-router"
+module "pfsense_s2" {
+  source    = "./modules/vm-pfsense"
   providers = { proxmox = proxmox.pve_s2 }
 
   vm_id       = 403
-  vm_name     = "cia-router-s2"
+  vm_name     = "cia-pf-s2"
   target_node = var.proxmox_s2_node
-  clone       = var.s2_template_id
-  storage     = var.storage
+  template_id = var.pfsense_template_s2
   cores       = 2
-  memory      = 2048
-  disk_size   = 10
-  wan_bridge  = "vmbr0" # WAN → internet
-  lan_bridge  = "vmbr2" # LAN S2 10.2.0.0/24
-  lan_ip      = local.ip.router_s2_lan
-  ssh_key     = var.ssh_public_key
-  vm_user     = var.vm_user
-  vm_password = var.vm_password
+  memory      = 3072
+  networks = [
+    { bridge = "vmbr0" }, # WAN
+    { bridge = "vmbr2" }, # LAN -> 10.2.0.0/24 (gateway pfSense = 10.2.0.1)
+  ]
 }
 
 module "bastion" {
@@ -98,11 +90,11 @@ module "bastion" {
   clone       = var.s2_template_id
   storage     = var.storage
   cores       = 1
-  memory      = 2048
+  memory      = 4096
   disk_size   = 20
   bridge      = "vmbr2"
   ip_address  = local.ip.bastion
-  gateway     = local.gw.s2
+  gateway     = local.gw.s2 # 10.2.0.1 = pfSense S2
   ssh_key     = var.ssh_public_key
   vm_user     = var.vm_user
   vm_password = var.vm_password
@@ -118,7 +110,7 @@ module "webserver" {
   clone       = var.s2_template_id
   storage     = var.storage
   cores       = 2
-  memory      = 2048
+  memory      = 4096
   disk_size   = 30
   bridge      = "vmbr2"
   ip_address  = local.ip.webserver

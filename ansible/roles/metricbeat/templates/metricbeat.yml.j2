@@ -1,0 +1,29 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+metricbeat.modules:
+  - module: system
+    period: 10s
+    metricsets:
+      - cpu
+      - load
+      - memory
+      - network
+      - process
+      - process_summary
+      - filesystem
+      - fsstat
+    processes: ['.*']
+
+fields:
+  site: "{{ 's1' if ansible_host.startswith('10.1.') else 's2' }}"
+  host_role: "{{ inventory_hostname }}"
+
+output.elasticsearch:
+  hosts: ["http://10.1.0.20:9200"]
+  username: "elastic"
+  password: "{{ elastic_password }}"
+
+setup.kibana:
+  host: "http://10.1.0.20:5601"

@@ -7,3 +7,8 @@
   systemd:
     name: kibana
     state: restarted
+
+- name: restart logstash
+  systemd:
+    name: logstash
+    state: restarted
