@@ -239,6 +239,16 @@ Host 10.1.0.*
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null
 
+# Webserver : géré À TRAVERS le bastion (jump host) — cohérent avec la règle
+# UFW "SSH bastion-only". Le bastion lui-même reste joignable via le Proxmox
+# (wildcard ci-dessous). SSH résout le ProxyJump imbriqué automatiquement.
+Host 10.2.0.30
+    ProxyJump cia@10.2.0.5
+    User cia
+    IdentityFile /tmp/cia_infra
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
 Host 10.2.0.*
     ProxyJump root@${PROXMOX_S2_IP}
     User cia

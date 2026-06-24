@@ -28,6 +28,16 @@ vpn_port:          1194
 # IP WAN publique de pfsense-s1 (pfsense-s2 s'y connecte pour établir le tunnel)
 openvpn_server_ip: "{{ lookup('env', 'OPENVPN_SERVER_IP') | mandatory }}"
 
+# ── Bastion ───────────────────────────────────────────────────────────────────
+# Users admin (distincts de `cia`) : passent par publickey + 2FA TOTP.
+# Renseigne la clé publique de chaque admin (Doppler ou en clair ici).
+bastion_admin_users:
+  - name: "{{ lookup('env', 'BASTION_ADMIN_USER') | default('opsadmin', true) }}"
+    ssh_key: "{{ lookup('env', 'BASTION_ADMIN_SSH_KEY') | default('', true) }}"
+
+# Users pour lesquels google-authenticator est initialisé (cia + admins).
+bastion_2fa_users: "{{ [ansible_user] + (bastion_admin_users | map(attribute='name') | list) }}"
+
 # ── pfSense ────────────────────────────────────────────────────────────────────
 # Hash bcrypt du mot de passe admin pfSense (injecté via Doppler PFSENSE_ADMIN_BCRYPT).
 pfsense_admin_bcrypt: "{{ lookup('env', 'PFSENSE_ADMIN_BCRYPT') }}"

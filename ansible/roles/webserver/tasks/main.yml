@@ -1,3 +1,21 @@
+- name: Restrict SSH access to bastion only (UFW)
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    src: "{{ hostvars['bastion']['ansible_host'] }}"
+
+- name: Deny SSH from everywhere else
+  ufw:
+    rule: deny
+    port: "22"
+    proto: tcp
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: allow
+
 - name: Install Nginx
   apt:
     name:
