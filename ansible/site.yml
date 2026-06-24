@@ -13,10 +13,12 @@
   roles: [common]
 
 # ── 2. Services Site 1 ────────────────────────────────────────────────────────
+# netbox_sync : timer systemd qui réconcilie l'inventaire Proxmox réel → NetBox
+# (IPAM mis à jour automatiquement, toutes les 15 min).
 - name: Deploy NetBox
   hosts: netbox
   become: true
-  roles: [netbox, filebeat, metricbeat]
+  roles: [netbox, netbox_sync, filebeat, metricbeat]
 
 - name: Deploy Elasticsearch + Kibana
   hosts: elasticsearch

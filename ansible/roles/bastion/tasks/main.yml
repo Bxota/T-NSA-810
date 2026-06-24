@@ -20,6 +20,50 @@
     insertbefore: BOF
     line: "auth required pam_google_authenticator.so nullok"
 
+# ── Comptes admin nommés (moindre privilège : pas de login root, clé + 2FA) ────
+- name: Create bastion admin users
+  user:
+    name: "{{ item.name }}"
+    groups: sudo
+    shell: /bin/bash
+    create_home: yes
+    state: present
+  loop: "{{ bastion_admin_users | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install admin users SSH public key
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.ssh_key }}"
+    state: present
+  loop: "{{ bastion_admin_users | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.ssh_key | length > 0
+
+- name: Initialize google-authenticator for bastion users
+  become_user: "{{ item }}"
+  command: google-authenticator -t -d -f -r 3 -R 30 -w 3 -C -q
+  args:
+    creates: "/home/{{ item }}/.google_authenticator"
+  loop: "{{ bastion_2fa_users | default([ansible_user]) }}"
+
+# ── fail2ban : bannissement après échecs SSH répétés ──────────────────────────
+- name: Configure fail2ban SSH jail
+  copy:
+    dest: /etc/fail2ban/jail.d/sshd.conf
+    content: |
+      [sshd]
+      enabled  = true
+      port     = ssh
+      filter   = sshd
+      logpath  = /var/log/auth.log
+      maxretry = 3
+      bantime  = 3600
+      findtime = 600
+  notify: restart fail2ban
+
 - name: Configure auditd rules
   template:
     src: audit.rules.j2

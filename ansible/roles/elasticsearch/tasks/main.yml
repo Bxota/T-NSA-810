@@ -119,3 +119,57 @@
   loop:
     - kibana
     - logstash
+
+# ── Dashboards Kibana (IaC) ───────────────────────────────────────────────────
+# Le NDJSON (data view + visualisations + dashboard) est versionné dans le repo et
+# importé via l'API saved_objects. overwrite=true → idempotent (réimport sans doublon).
+- name: Attendre que Kibana réponde
+  uri:
+    url: "http://localhost:5601/api/status"
+    method: GET
+    url_username: "elastic"
+    url_password: "{{ elastic_password }}"
+    force_basic_auth: yes
+    status_code: [200]
+  register: kibana_status
+  until: kibana_status.status == 200
+  retries: 30
+  delay: 10
+
+- name: Copier le NDJSON des dashboards
+  copy:
+    src: kibana-dashboard.ndjson
+    dest: /tmp/kibana-dashboard.ndjson
+    mode: "0644"
+
+- name: Importer les objets Kibana (data view + visualisations + dashboard)
+  ansible.builtin.command: >
+    curl -sf -u "elastic:{{ elastic_password }}"
+    "http://localhost:5601/api/saved_objects/_import?overwrite=true"
+    -H "kbn-xsrf: true"
+    -F file=@/tmp/kibana-dashboard.ndjson
+  register: kibana_import
+  changed_when: '"\"successCount\"" in kibana_import.stdout'
+  failed_when: '"\"success\":true" not in kibana_import.stdout'
+
+# ── Alerting Kibana (IaC) ─────────────────────────────────────────────────────
+- name: Installer python3-requests (dépendance de setup_alerts.py)
+  apt:
+    name: python3-requests
+    state: present
+    update_cache: yes
+
+- name: Déployer le script de provisioning des alertes
+  copy:
+    src: setup_alerts.py
+    dest: /opt/setup_alerts.py
+    mode: "0755"
+
+- name: Provisionner les règles d'alerte Kibana (brute-force SSH, pic d'erreurs)
+  ansible.builtin.command: /usr/bin/python3 /opt/setup_alerts.py
+  environment:
+    KIBANA_URL: "http://localhost:5601"
+    ELASTIC_USER: "elastic"
+    ELASTIC_PASSWORD: "{{ elastic_password }}"
+  register: alerts_setup
+  changed_when: "'règle créée' in alerts_setup.stdout"

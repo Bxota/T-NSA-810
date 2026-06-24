@@ -1,0 +1,26 @@
+---
+# Configuration yamllint — volontairement permissive (infra YAML, pas du code).
+extends: default
+
+rules:
+  line-length:
+    max: 160
+    level: warning
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  truthy:
+    allowed-values: ["true", "false", "yes", "no"]
+  document-start: disable
+  # Alignement vertical volontaire (clé:   valeur) → on tolère les espaces.
+  colons:
+    max-spaces-after: -1
+  commas:
+    max-spaces-after: -1
+  braces:
+    max-spaces-inside: 1
+  octal-values: disable
+
+ignore: |
+  ansible/collections/
+  terraform/

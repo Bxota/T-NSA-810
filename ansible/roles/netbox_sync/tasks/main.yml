@@ -1,0 +1,55 @@
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Rôle netbox_sync — IPAM auto-update : synchronise l'inventaire Proxmox réel
+# vers NetBox via un timer systemd (toutes les 15 min) + un run immédiat.
+# ══════════════════════════════════════════════════════════════════════════════
+
+- name: Installer python3-requests (dépendance du script)
+  apt:
+    name: python3-requests
+    state: present
+    update_cache: yes
+
+- name: Créer le répertoire du script de sync
+  file:
+    path: /opt/netbox-sync
+    state: directory
+    mode: "0755"
+
+- name: Déployer le script de synchronisation
+  copy:
+    src: proxmox_netbox_sync.py
+    dest: /opt/netbox-sync/proxmox_netbox_sync.py
+    mode: "0755"
+
+- name: Déployer le fichier d'environnement (secrets)
+  template:
+    src: proxmox-netbox-sync.env.j2
+    dest: /etc/proxmox-netbox-sync.env
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: Déployer l'unit systemd (service)
+  template:
+    src: proxmox-netbox-sync.service.j2
+    dest: /etc/systemd/system/proxmox-netbox-sync.service
+    mode: "0644"
+
+- name: Déployer le timer systemd
+  template:
+    src: proxmox-netbox-sync.timer.j2
+    dest: /etc/systemd/system/proxmox-netbox-sync.timer
+    mode: "0644"
+
+- name: Activer et démarrer le timer
+  systemd:
+    name: proxmox-netbox-sync.timer
+    daemon_reload: yes
+    enabled: yes
+    state: started
+
+- name: Lancer une synchronisation immédiate
+  systemd:
+    name: proxmox-netbox-sync.service
+    state: started

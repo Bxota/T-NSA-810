@@ -13,6 +13,28 @@ domain_s2: "s2.local"
 lan_s1:    "10.1.0.0/24"
 lan_s2:    "10.2.0.0/24"
 
+# ── IPAM auto-sync (rôle netbox_sync) ─────────────────────────────────────────
+# Creds cluster Proxmox (un seul jeu : les deux nœuds sont dans le même cluster).
+proxmox_api_url:      "{{ lookup('env', 'PROXMOX_API_URL') }}"
+proxmox_token_id:     "{{ lookup('env', 'PROXMOX_TOKEN_ID') }}"
+proxmox_token_secret: "{{ lookup('env', 'PROXMOX_TOKEN_SECRET') }}"
+# Nœuds à synchroniser vers NetBox (même endpoint, noms de nœuds différents).
+proxmox_sync_nodes:
+  - { url: "{{ proxmox_api_url }}", node: "pve6", token_id: "{{ proxmox_token_id }}", token_secret: "{{ proxmox_token_secret }}" }
+  - { url: "{{ proxmox_api_url }}", node: "pve7", token_id: "{{ proxmox_token_id }}", token_secret: "{{ proxmox_token_secret }}" }
+# IP LAN des pfSense (sans cloud-init → fournies au sync en statique).
+pfsense_s1_lan_cidr: "10.1.0.1/24"
+pfsense_s2_lan_cidr: "10.2.0.1/24"
+
+# ── Bastion (accès externe Site 2, moindre privilège) ─────────────────────────
+# Comptes admin nommés (distincts de `cia`) : login par clé publique + 2FA TOTP.
+# Renseigne la clé publique de chaque admin (idéalement via Doppler).
+bastion_admin_users:
+  - name: "{{ lookup('env', 'BASTION_ADMIN_USER') | default('opsadmin', true) }}"
+    ssh_key: "{{ lookup('env', 'BASTION_ADMIN_SSH_KEY') | default('', true) }}"
+# Users pour lesquels google-authenticator est initialisé (cia + admins).
+bastion_2fa_users: "{{ [ansible_user] + (bastion_admin_users | map(attribute='name') | list) }}"
+
 # ── VPN ───────────────────────────────────────────────────────────────────────
 vpn_subnet:        "10.8.0.0/24"
 vpn_port:          1194

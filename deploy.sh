@@ -21,6 +21,11 @@ load_secrets() {
   export PROXMOX_S1_IP=$(doppler secrets get PROXMOX_S1_IP --plain)
   export PROXMOX_S2_IP=$(doppler secrets get PROXMOX_S2_IP --plain)
 
+  # Creds cluster Proxmox (pour le sync IPAM netbox_sync, exécuté depuis la VM NetBox)
+  export PROXMOX_API_URL=$(doppler secrets get PROXMOX_API_URL --plain)
+  export PROXMOX_TOKEN_ID=$(doppler secrets get PROXMOX_TOKEN_ID --plain)
+  export PROXMOX_TOKEN_SECRET=$(doppler secrets get PROXMOX_TOKEN_SECRET --plain)
+
   # Mot de passe root Proxmox (pour bootstrap initial via sshpass)
   export PROXMOX_ROOT_PASSWORD=$(doppler secrets get PROXMOX_ROOT_PASSWORD --plain 2>/dev/null || echo "")
 
