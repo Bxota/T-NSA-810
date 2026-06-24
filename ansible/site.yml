@@ -1,6 +1,10 @@
 ---
-# Les routeurs/pare-feux sont des pfSense, configurés via config.xml (hors Ansible).
-# Ansible ne gère que les 4 VMs applicatives.
+# ── 0. pfSense : pousse le config.xml de chaque site puis l'applique ──────────
+#     (pré-requis une fois : shell admin = /bin/sh sur le template, cf roles/pfsense/README.md)
+- name: Configure pfSense firewalls
+  hosts: pfsense
+  gather_facts: false
+  roles: [pfsense]
 
 # ── 1. Setup commun sur toutes les VMs applicatives ───────────────────────────
 - name: Common setup all app VMs

@@ -1,0 +1,7 @@
+---
+# Identifiants pfSense (le mot de passe est dans le config.xml ; idéalement en Doppler)
+pfsense_admin_user: admin
+pfsense_admin_password: "pfSenseCIA!"
+
+# Dossier des configs validées (source de vérité)
+pfsense_config_dir: "{{ playbook_dir }}/../pfsense-exported"

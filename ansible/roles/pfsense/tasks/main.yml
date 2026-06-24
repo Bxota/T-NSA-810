@@ -1,0 +1,38 @@
+---
+# ════════════════════════════════════════════════════════════════════════════
+# Rôle pfSense — pousse le config.xml du site par SSH puis l'applique.
+#
+# PRÉ-REQUIS (UNE FOIS, sur le template pfSense — voir roles/pfsense/README.md) :
+#   1. SSH activé.
+#   2. Shell de l'admin = /bin/sh  (sinon SSH ouvre le menu pfSense, pas un shell,
+#      et scp/raw échouent). Console option 8 :  pw usermod admin -s /bin/sh
+#   3. config.xml de chaque site avec WAN statique (déterminisme du VPN).
+# Après cette prep une fois, ce rôle est 100% automatique sur tous les clones.
+# ════════════════════════════════════════════════════════════════════════════
+
+- name: Vérifier l'accès shell SSH pfSense
+  ansible.builtin.raw: echo OK
+  register: pf_probe
+  changed_when: false
+  failed_when: "'OK' not in pf_probe.stdout"
+
+- name: Pousser le config.xml du site vers /cf/conf/config.xml
+  delegate_to: localhost
+  vars:
+    ansible_connection: local
+  ansible.builtin.command:
+    cmd: >-
+      sshpass -p '{{ pfsense_admin_password }}'
+      scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+      -o ProxyCommand="ssh -i /tmp/cia_infra -W %h:%p -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@{{ proxmox_jump_ip }}"
+      {{ pfsense_config_dir }}/{{ pfsense_config_file }}
+      {{ pfsense_admin_user }}@{{ ansible_host }}:/cf/conf/config.xml
+  changed_when: true
+
+- name: Appliquer la config (purge cache + reload complet)
+  ansible.builtin.raw: rm -f /tmp/config.cache && /etc/rc.reload_all
+  changed_when: true
+
+- name: Laisser pfSense recharger
+  ansible.builtin.pause:
+    seconds: 20

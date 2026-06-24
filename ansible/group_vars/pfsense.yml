@@ -1,0 +1,3 @@
+---
+# Mot de passe admin pfSense (issu du config.xml). À basculer en Doppler si besoin.
+pfsense_admin_password: "pfSenseCIA!"
