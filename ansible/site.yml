@@ -22,20 +22,29 @@
 - name: Deploy NetBox
   hosts: netbox
   become: true
-  roles: [netbox, netbox_sync, filebeat]
+  roles:
+    - netbox
+    - netbox_sync
+    - { role: filebeat, tags: filebeat }
 
 - name: Deploy Elasticsearch + Kibana
   hosts: elasticsearch
   become: true
-  roles: [elasticsearch, filebeat]
+  roles:
+    - elasticsearch
+    - { role: filebeat, tags: filebeat }
 
 # ── 4. Services Site 2 ────────────────────────────────────────────────────────
 - name: Deploy Bastion
   hosts: bastion
   become: true
-  roles: [bastion, filebeat]
+  roles:
+    - bastion
+    - { role: filebeat, tags: filebeat }
 
 - name: Deploy Webserver
   hosts: webserver
   become: true
-  roles: [webserver, filebeat]
+  roles:
+    - webserver
+    - { role: filebeat, tags: filebeat }

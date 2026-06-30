@@ -1,0 +1,4 @@
+# Modules Filebeat à activer sur l'hôte (parsing via pipelines ingest Elastic).
+# Surchargé par hôte dans l'inventaire (ex: webserver/netbox => + nginx).
+filebeat_modules:
+  - system

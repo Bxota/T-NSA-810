@@ -259,7 +259,8 @@ EOF
     export ANSIBLE_SSH_ARGS="-F /tmp/cia_ssh_config"
     cd ansible/
     ansible-galaxy collection install -r requirements.yml -p ./collections
-    ansible-playbook -i inventory/hosts.yml site.yml
+    # Args supplémentaires forwardés tels quels (ex: ./deploy.sh config --tags filebeat)
+    ansible-playbook -i inventory/hosts.yml site.yml "${@:2}"
     rm -f /tmp/cia_ssh_config
     ;;
 

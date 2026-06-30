@@ -20,6 +20,19 @@
     dest: /etc/filebeat/filebeat.yml
   notify: restart filebeat
 
+- name: Deploy module configs (parsing)
+  template:
+    src: "{{ item }}.yml.j2"
+    dest: "/etc/filebeat/modules.d/{{ item }}.yml"
+  loop: "{{ filebeat_modules }}"
+  notify: restart filebeat
+
+- name: Push ingest pipelines to Elasticsearch
+  # Pas de --modules : lit les filesets activés dans modules.d/
+  command: "filebeat setup --pipelines"
+  register: fb_setup
+  changed_when: "'Loaded Ingest pipelines' in fb_setup.stdout"
+
 - name: Enable filebeat
   systemd:
     name: filebeat

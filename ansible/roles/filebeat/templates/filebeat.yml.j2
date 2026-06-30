@@ -1,9 +1,6 @@
-filebeat.inputs:
-  - type: log
-    enabled: true
-    paths:
-      - /var/log/*.log
-      - /var/log/syslog
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: true
 
 output.elasticsearch:
   hosts: ["http://10.1.0.20:9200"]
