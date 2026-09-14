@@ -40,11 +40,17 @@ if [[ "$SITE" == "1" ]]; then
   BRIDGE_IP="10.1.0.254"
   BRIDGE_MASK="24"
   COMMENT="LAN Site 1 (10.1.0.0/24)"
+  # Route vers le LAN du site distant via le pfSense local (porte le tunnel VPN).
+  # Sans ça, l'hôte Proxmox (gw par défaut = box internet) ne sait pas joindre l'autre site.
+  REMOTE_LAN="10.2.0.0/24"
+  REMOTE_GW="10.1.0.1"
 elif [[ "$SITE" == "2" ]]; then
   BRIDGE="vmbr2"
   BRIDGE_IP="10.2.0.254"
   BRIDGE_MASK="24"
   COMMENT="LAN Site 2 (10.2.0.0/24)"
+  REMOTE_LAN="10.1.0.0/24"
+  REMOTE_GW="10.2.0.1"
 else
   echo "Erreur : --site doit être 1 ou 2"
   exit 1
@@ -66,9 +72,17 @@ iface ${BRIDGE} inet static
     bridge-stp off
     bridge-fd 0
     # ${COMMENT}
+    post-up ip route add ${REMOTE_LAN} via ${REMOTE_GW} || true
+    pre-down ip route del ${REMOTE_LAN} via ${REMOTE_GW} || true
 EOF
   ifup "$BRIDGE"
   echo "[bridge] $BRIDGE actif."
+fi
+
+# ── 1b. Route vers le site distant (si le bridge existait déjà sans la route) ──
+if ! ip route show "$REMOTE_LAN" | grep -q "$REMOTE_GW"; then
+  echo "[route] Ajout route $REMOTE_LAN via $REMOTE_GW (site distant)."
+  ip route add "$REMOTE_LAN" via "$REMOTE_GW" 2>/dev/null || true
 fi
 
 # ── 2. Télécharger l'image cloud Ubuntu 24.04 ────────────────────────────────
